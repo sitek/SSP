@@ -1,0 +1,6 @@
+#!/bin/bash
+
+for sub in SSP001 SSP002 SSP005 SSP009 SSP011 SSP012 SSP013 SSP014 SSP017 SSP018 SSP020 SSP028 SSP032 SSP033 SSP034 SSP036 SSP038 SSP039 SSP041 SSP045 SSP051; do
+  echo "Running normT2star on $sub"
+  sbatch run_normT2star.sh $sub
+done

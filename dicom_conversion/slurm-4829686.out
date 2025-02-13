@@ -1,0 +1,988 @@
+converting SSP058
+INFO: Running heudiconv version 0.11.3 latest 1.3.2
+INFO: Need to process 1 study sessions
+INFO: PROCESSING STARTS: {'subject': 'SSP058', 'outdir': '/bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/', 'session': '1'}
+INFO: Processing 12152 dicoms
+INFO: Analyzing 12152 dicoms
+INFO: Generated sequence info with 36 entries
+INFO: Doing conversion using dcm2niix
+INFO: Converting /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_T1w (176 DICOMs) -> /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat . Converter: dcm2niix . Output types: ('nii.gz',)
+250114-17:41:33,92 nipype.utils WARNING:
+	 A newer version (1.8.4) of nipy/nipype is available. You are using 1.6.0
+WARNING: A newer version (1.8.4) of nipy/nipype is available. You are using 1.6.0
+250114-17:41:33,171 nipype.workflow INFO:
+	 [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niix2nqvehwo/convert".
+INFO: [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niix2nqvehwo/convert".
+250114-17:41:33,234 nipype.workflow INFO:
+	 [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_T1w_heudiconv043 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat -s n -v n /scratch/slurm-4829686/dcm2niix2nqvehwo/convert
+INFO: [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_T1w_heudiconv043 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat -s n -v n /scratch/slurm-4829686/dcm2niix2nqvehwo/convert
+250114-17:41:35,66 nipype.interface INFO:
+	 stdout 2025-01-14T17:41:35.066102:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+INFO: stdout 2025-01-14T17:41:35.066102:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+250114-17:41:35,66 nipype.interface INFO:
+	 stdout 2025-01-14T17:41:35.066102:Found 176 DICOM file(s)
+INFO: stdout 2025-01-14T17:41:35.066102:Found 176 DICOM file(s)
+250114-17:41:35,66 nipype.interface INFO:
+	 stdout 2025-01-14T17:41:35.066102:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_T1w_heudiconv043 (256x256x176x1)
+INFO: stdout 2025-01-14T17:41:35.066102:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_T1w_heudiconv043 (256x256x176x1)
+250114-17:41:36,419 nipype.interface INFO:
+	 stdout 2025-01-14T17:41:36.419710:Conversion required 2.738143 seconds (1.830000 for core code).
+INFO: stdout 2025-01-14T17:41:36.419710:Conversion required 2.738143 seconds (1.830000 for core code).
+250114-17:41:36,468 nipype.workflow INFO:
+	 [Node] Finished "convert".
+INFO: [Node] Finished "convert".
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_T1w.json.
+250114-17:41:36,549 nipype.workflow INFO:
+	 [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetadsgzbg7b/embedder".
+INFO: [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetadsgzbg7b/embedder".
+250114-17:41:36,576 nipype.workflow INFO:
+	 [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+INFO: [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+250114-17:41:41,556 nipype.workflow INFO:
+	 [Node] Finished "embedder".
+INFO: [Node] Finished "embedder".
+INFO: Post-treating /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_T1w.json file
+INFO: Converting /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_acq-func_dir-AP_run-01_epi (3 DICOMs) -> /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap . Converter: dcm2niix . Output types: ('nii.gz',)
+250114-17:41:41,617 nipype.workflow INFO:
+	 [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixbh7xl2os/convert".
+INFO: [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixbh7xl2os/convert".
+250114-17:41:41,625 nipype.workflow INFO:
+	 [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_acq-func_dir-AP_run-01_epi_heudiconv281 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap -s n -v n /scratch/slurm-4829686/dcm2niixbh7xl2os/convert
+INFO: [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_acq-func_dir-AP_run-01_epi_heudiconv281 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap -s n -v n /scratch/slurm-4829686/dcm2niixbh7xl2os/convert
+250114-17:41:41,958 nipype.interface INFO:
+	 stdout 2025-01-14T17:41:41.958097:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+INFO: stdout 2025-01-14T17:41:41.958097:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+250114-17:41:41,958 nipype.interface INFO:
+	 stdout 2025-01-14T17:41:41.958097:Found 3 DICOM file(s)
+INFO: stdout 2025-01-14T17:41:41.958097:Found 3 DICOM file(s)
+250114-17:41:41,958 nipype.interface INFO:
+	 stdout 2025-01-14T17:41:41.958097:Convert 3 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_acq-func_dir-AP_run-01_epi_heudiconv281 (104x104x72x3)
+INFO: stdout 2025-01-14T17:41:41.958097:Convert 3 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_acq-func_dir-AP_run-01_epi_heudiconv281 (104x104x72x3)
+250114-17:41:42,132 nipype.interface INFO:
+	 stdout 2025-01-14T17:41:42.132335:Conversion required 0.391768 seconds (0.260000 for core code).
+INFO: stdout 2025-01-14T17:41:42.132335:Conversion required 0.391768 seconds (0.260000 for core code).
+250114-17:41:42,175 nipype.workflow INFO:
+	 [Node] Finished "convert".
+INFO: [Node] Finished "convert".
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_acq-func_dir-AP_run-01_epi.json.
+250114-17:41:42,250 nipype.workflow INFO:
+	 [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetau7up9x7f/embedder".
+INFO: [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetau7up9x7f/embedder".
+250114-17:41:42,267 nipype.workflow INFO:
+	 [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+INFO: [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+250114-17:41:42,486 nipype.workflow INFO:
+	 [Node] Finished "embedder".
+INFO: [Node] Finished "embedder".
+INFO: Post-treating /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_acq-func_dir-AP_run-01_epi.json file
+INFO: Converting /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_acq-func_dir-PA_run-01_epi (3 DICOMs) -> /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap . Converter: dcm2niix . Output types: ('nii.gz',)
+250114-17:41:42,515 nipype.workflow INFO:
+	 [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixrr9jna8n/convert".
+INFO: [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixrr9jna8n/convert".
+250114-17:41:42,521 nipype.workflow INFO:
+	 [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_acq-func_dir-PA_run-01_epi_heudiconv810 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap -s n -v n /scratch/slurm-4829686/dcm2niixrr9jna8n/convert
+INFO: [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_acq-func_dir-PA_run-01_epi_heudiconv810 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap -s n -v n /scratch/slurm-4829686/dcm2niixrr9jna8n/convert
+250114-17:41:42,851 nipype.interface INFO:
+	 stdout 2025-01-14T17:41:42.851106:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+INFO: stdout 2025-01-14T17:41:42.851106:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+250114-17:41:42,851 nipype.interface INFO:
+	 stdout 2025-01-14T17:41:42.851106:Found 3 DICOM file(s)
+INFO: stdout 2025-01-14T17:41:42.851106:Found 3 DICOM file(s)
+250114-17:41:42,851 nipype.interface INFO:
+	 stdout 2025-01-14T17:41:42.851106:Convert 3 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_acq-func_dir-PA_run-01_epi_heudiconv810 (104x104x72x3)
+INFO: stdout 2025-01-14T17:41:42.851106:Convert 3 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_acq-func_dir-PA_run-01_epi_heudiconv810 (104x104x72x3)
+250114-17:41:43,22 nipype.interface INFO:
+	 stdout 2025-01-14T17:41:43.022420:Conversion required 0.393106 seconds (0.260000 for core code).
+INFO: stdout 2025-01-14T17:41:43.022420:Conversion required 0.393106 seconds (0.260000 for core code).
+250114-17:41:43,55 nipype.workflow INFO:
+	 [Node] Finished "convert".
+INFO: [Node] Finished "convert".
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_acq-func_dir-PA_run-01_epi.json.
+250114-17:41:43,129 nipype.workflow INFO:
+	 [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmeta9rujweni/embedder".
+INFO: [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmeta9rujweni/embedder".
+250114-17:41:43,141 nipype.workflow INFO:
+	 [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+INFO: [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+250114-17:41:43,406 nipype.workflow INFO:
+	 [Node] Finished "embedder".
+INFO: [Node] Finished "embedder".
+INFO: Post-treating /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_acq-func_dir-PA_run-01_epi.json file
+INFO: Converting /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-rest_run-01_bold (420 DICOMs) -> /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func . Converter: dcm2niix . Output types: ('nii.gz',)
+250114-17:41:43,582 nipype.workflow INFO:
+	 [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixjp_ntpfz/convert".
+INFO: [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixjp_ntpfz/convert".
+250114-17:41:43,715 nipype.workflow INFO:
+	 [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_task-rest_run-01_bold_heudiconv086 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func -s n -v n /scratch/slurm-4829686/dcm2niixjp_ntpfz/convert
+INFO: [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_task-rest_run-01_bold_heudiconv086 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func -s n -v n /scratch/slurm-4829686/dcm2niixjp_ntpfz/convert
+250114-17:42:04,502 nipype.interface INFO:
+	 stdout 2025-01-14T17:42:04.502105:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+INFO: stdout 2025-01-14T17:42:04.502105:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+250114-17:42:04,513 nipype.interface INFO:
+	 stdout 2025-01-14T17:42:04.502105:Found 420 DICOM file(s)
+INFO: stdout 2025-01-14T17:42:04.502105:Found 420 DICOM file(s)
+250114-17:42:04,513 nipype.interface INFO:
+	 stdout 2025-01-14T17:42:04.502105:Convert 420 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-rest_run-01_bold_heudiconv086 (104x104x72x420)
+INFO: stdout 2025-01-14T17:42:04.502105:Convert 420 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-rest_run-01_bold_heudiconv086 (104x104x72x420)
+250114-17:42:31,24 nipype.interface INFO:
+	 stdout 2025-01-14T17:42:31.024402:Conversion required 47.197494 seconds (27.950001 for core code).
+INFO: stdout 2025-01-14T17:42:31.024402:Conversion required 47.197494 seconds (27.950001 for core code).
+250114-17:42:31,132 nipype.workflow INFO:
+	 [Node] Finished "convert".
+INFO: [Node] Finished "convert".
+250114-17:42:31,208 nipype.workflow INFO:
+	 [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetatae9swjw/embedder".
+INFO: [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetatae9swjw/embedder".
+250114-17:42:31,253 nipype.workflow INFO:
+	 [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+INFO: [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+250114-17:42:58,914 nipype.workflow INFO:
+	 [Node] Finished "embedder".
+INFO: [Node] Finished "embedder".
+INFO: Post-treating /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-rest_run-01_bold.json file
+INFO: Converting /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-rest_run-01_sbref (1 DICOMs) -> /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func . Converter: dcm2niix . Output types: ('nii.gz',)
+250114-17:42:59,113 nipype.workflow INFO:
+	 [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niix6x914lez/convert".
+INFO: [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niix6x914lez/convert".
+250114-17:42:59,120 nipype.workflow INFO:
+	 [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_task-rest_run-01_sbref_heudiconv837 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func -s n -v n /scratch/slurm-4829686/dcm2niix6x914lez/convert
+INFO: [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_task-rest_run-01_sbref_heudiconv837 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func -s n -v n /scratch/slurm-4829686/dcm2niix6x914lez/convert
+250114-17:42:59,505 nipype.interface INFO:
+	 stdout 2025-01-14T17:42:59.505102:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+INFO: stdout 2025-01-14T17:42:59.505102:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+250114-17:42:59,505 nipype.interface INFO:
+	 stdout 2025-01-14T17:42:59.505102:Found 1 DICOM file(s)
+INFO: stdout 2025-01-14T17:42:59.505102:Found 1 DICOM file(s)
+250114-17:42:59,505 nipype.interface INFO:
+	 stdout 2025-01-14T17:42:59.505102:Convert 1 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-rest_run-01_sbref_heudiconv837 (104x104x72x1)
+INFO: stdout 2025-01-14T17:42:59.505102:Convert 1 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-rest_run-01_sbref_heudiconv837 (104x104x72x1)
+250114-17:42:59,564 nipype.interface INFO:
+	 stdout 2025-01-14T17:42:59.564567:Conversion required 0.178049 seconds (0.120000 for core code).
+INFO: stdout 2025-01-14T17:42:59.564567:Conversion required 0.178049 seconds (0.120000 for core code).
+250114-17:42:59,621 nipype.workflow INFO:
+	 [Node] Finished "convert".
+INFO: [Node] Finished "convert".
+250114-17:42:59,710 nipype.workflow INFO:
+	 [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetalznsahy7/embedder".
+INFO: [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetalznsahy7/embedder".
+250114-17:42:59,727 nipype.workflow INFO:
+	 [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+INFO: [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+250114-17:42:59,837 nipype.workflow INFO:
+	 [Node] Finished "embedder".
+INFO: [Node] Finished "embedder".
+INFO: Post-treating /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-rest_run-01_sbref.json file
+INFO: Converting /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-badaga_run-01_bold (184 DICOMs) -> /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func . Converter: dcm2niix . Output types: ('nii.gz',)
+250114-17:42:59,900 nipype.workflow INFO:
+	 [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixx0me46md/convert".
+INFO: [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixx0me46md/convert".
+250114-17:42:59,964 nipype.workflow INFO:
+	 [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_task-badaga_run-01_bold_heudiconv193 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func -s n -v n /scratch/slurm-4829686/dcm2niixx0me46md/convert
+INFO: [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_task-badaga_run-01_bold_heudiconv193 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func -s n -v n /scratch/slurm-4829686/dcm2niixx0me46md/convert
+250114-17:43:08,987 nipype.interface INFO:
+	 stdout 2025-01-14T17:43:08.987107:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+INFO: stdout 2025-01-14T17:43:08.987107:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+250114-17:43:08,998 nipype.interface INFO:
+	 stdout 2025-01-14T17:43:08.987107:Found 184 DICOM file(s)
+INFO: stdout 2025-01-14T17:43:08.987107:Found 184 DICOM file(s)
+250114-17:43:08,998 nipype.interface INFO:
+	 stdout 2025-01-14T17:43:08.987107:Convert 184 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-badaga_run-01_bold_heudiconv193 (104x104x72x184)
+INFO: stdout 2025-01-14T17:43:08.987107:Convert 184 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-badaga_run-01_bold_heudiconv193 (104x104x72x184)
+250114-17:43:20,472 nipype.interface INFO:
+	 stdout 2025-01-14T17:43:20.472219:Conversion required 20.226442 seconds (12.200000 for core code).
+INFO: stdout 2025-01-14T17:43:20.472219:Conversion required 20.226442 seconds (12.200000 for core code).
+250114-17:43:20,529 nipype.workflow INFO:
+	 [Node] Finished "convert".
+INFO: [Node] Finished "convert".
+250114-17:43:20,613 nipype.workflow INFO:
+	 [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetaytn_55vn/embedder".
+INFO: [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetaytn_55vn/embedder".
+250114-17:43:20,647 nipype.workflow INFO:
+	 [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+INFO: [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+250114-17:43:32,934 nipype.workflow INFO:
+	 [Node] Finished "embedder".
+INFO: [Node] Finished "embedder".
+INFO: Post-treating /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-badaga_run-01_bold.json file
+INFO: Converting /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-badaga_run-02_bold (184 DICOMs) -> /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func . Converter: dcm2niix . Output types: ('nii.gz',)
+250114-17:43:33,137 nipype.workflow INFO:
+	 [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niix4fv6sdtn/convert".
+INFO: [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niix4fv6sdtn/convert".
+250114-17:43:33,197 nipype.workflow INFO:
+	 [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_task-badaga_run-02_bold_heudiconv352 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func -s n -v n /scratch/slurm-4829686/dcm2niix4fv6sdtn/convert
+INFO: [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_task-badaga_run-02_bold_heudiconv352 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func -s n -v n /scratch/slurm-4829686/dcm2niix4fv6sdtn/convert
+250114-17:43:43,174 nipype.interface INFO:
+	 stdout 2025-01-14T17:43:43.174109:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+INFO: stdout 2025-01-14T17:43:43.174109:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+250114-17:43:43,185 nipype.interface INFO:
+	 stdout 2025-01-14T17:43:43.174109:Found 184 DICOM file(s)
+INFO: stdout 2025-01-14T17:43:43.174109:Found 184 DICOM file(s)
+250114-17:43:43,185 nipype.interface INFO:
+	 stdout 2025-01-14T17:43:43.174109:Convert 184 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-badaga_run-02_bold_heudiconv352 (104x104x72x184)
+INFO: stdout 2025-01-14T17:43:43.174109:Convert 184 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-badaga_run-02_bold_heudiconv352 (104x104x72x184)
+250114-17:43:54,634 nipype.interface INFO:
+	 stdout 2025-01-14T17:43:54.634460:Conversion required 21.153711 seconds (12.100000 for core code).
+INFO: stdout 2025-01-14T17:43:54.634460:Conversion required 21.153711 seconds (12.100000 for core code).
+250114-17:43:54,741 nipype.workflow INFO:
+	 [Node] Finished "convert".
+INFO: [Node] Finished "convert".
+250114-17:43:54,901 nipype.workflow INFO:
+	 [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetaxkp7zwz_/embedder".
+INFO: [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetaxkp7zwz_/embedder".
+250114-17:43:54,930 nipype.workflow INFO:
+	 [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+INFO: [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+250114-17:44:07,67 nipype.workflow INFO:
+	 [Node] Finished "embedder".
+INFO: [Node] Finished "embedder".
+INFO: Post-treating /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-badaga_run-02_bold.json file
+INFO: Converting /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-badaga_run-03_bold (184 DICOMs) -> /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func . Converter: dcm2niix . Output types: ('nii.gz',)
+250114-17:44:07,234 nipype.workflow INFO:
+	 [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixlbxdmnq0/convert".
+INFO: [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixlbxdmnq0/convert".
+250114-17:44:07,296 nipype.workflow INFO:
+	 [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_task-badaga_run-03_bold_heudiconv629 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func -s n -v n /scratch/slurm-4829686/dcm2niixlbxdmnq0/convert
+INFO: [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_task-badaga_run-03_bold_heudiconv629 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func -s n -v n /scratch/slurm-4829686/dcm2niixlbxdmnq0/convert
+250114-17:44:17,170 nipype.interface INFO:
+	 stdout 2025-01-14T17:44:17.170108:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+INFO: stdout 2025-01-14T17:44:17.170108:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+250114-17:44:17,181 nipype.interface INFO:
+	 stdout 2025-01-14T17:44:17.170108:Found 184 DICOM file(s)
+INFO: stdout 2025-01-14T17:44:17.170108:Found 184 DICOM file(s)
+250114-17:44:17,181 nipype.interface INFO:
+	 stdout 2025-01-14T17:44:17.170108:Convert 184 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-badaga_run-03_bold_heudiconv629 (104x104x72x184)
+INFO: stdout 2025-01-14T17:44:17.170108:Convert 184 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-badaga_run-03_bold_heudiconv629 (104x104x72x184)
+250114-17:44:28,681 nipype.interface INFO:
+	 stdout 2025-01-14T17:44:28.681656:Conversion required 21.116986 seconds (12.100000 for core code).
+INFO: stdout 2025-01-14T17:44:28.681656:Conversion required 21.116986 seconds (12.100000 for core code).
+250114-17:44:28,733 nipype.workflow INFO:
+	 [Node] Finished "convert".
+INFO: [Node] Finished "convert".
+250114-17:44:28,818 nipype.workflow INFO:
+	 [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetay_vl9g4d/embedder".
+INFO: [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetay_vl9g4d/embedder".
+250114-17:44:28,848 nipype.workflow INFO:
+	 [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+INFO: [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+250114-17:44:41,220 nipype.workflow INFO:
+	 [Node] Finished "embedder".
+INFO: [Node] Finished "embedder".
+INFO: Post-treating /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-badaga_run-03_bold.json file
+INFO: Converting /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-badaga_run-01_sbref (1 DICOMs) -> /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func . Converter: dcm2niix . Output types: ('nii.gz',)
+250114-17:44:41,314 nipype.workflow INFO:
+	 [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixj87ycj8m/convert".
+INFO: [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixj87ycj8m/convert".
+250114-17:44:41,320 nipype.workflow INFO:
+	 [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_task-badaga_run-01_sbref_heudiconv568 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func -s n -v n /scratch/slurm-4829686/dcm2niixj87ycj8m/convert
+INFO: [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_task-badaga_run-01_sbref_heudiconv568 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func -s n -v n /scratch/slurm-4829686/dcm2niixj87ycj8m/convert
+250114-17:44:41,723 nipype.interface INFO:
+	 stdout 2025-01-14T17:44:41.723104:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+INFO: stdout 2025-01-14T17:44:41.723104:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+250114-17:44:41,723 nipype.interface INFO:
+	 stdout 2025-01-14T17:44:41.723104:Found 1 DICOM file(s)
+INFO: stdout 2025-01-14T17:44:41.723104:Found 1 DICOM file(s)
+250114-17:44:41,723 nipype.interface INFO:
+	 stdout 2025-01-14T17:44:41.723104:Convert 1 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-badaga_run-01_sbref_heudiconv568 (104x104x72x1)
+INFO: stdout 2025-01-14T17:44:41.723104:Convert 1 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-badaga_run-01_sbref_heudiconv568 (104x104x72x1)
+250114-17:44:41,776 nipype.interface INFO:
+	 stdout 2025-01-14T17:44:41.776300:Conversion required 0.226887 seconds (0.120000 for core code).
+INFO: stdout 2025-01-14T17:44:41.776300:Conversion required 0.226887 seconds (0.120000 for core code).
+250114-17:44:41,818 nipype.workflow INFO:
+	 [Node] Finished "convert".
+INFO: [Node] Finished "convert".
+250114-17:44:41,917 nipype.workflow INFO:
+	 [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetas3sh07ub/embedder".
+INFO: [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetas3sh07ub/embedder".
+250114-17:44:41,934 nipype.workflow INFO:
+	 [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+INFO: [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+250114-17:44:42,42 nipype.workflow INFO:
+	 [Node] Finished "embedder".
+INFO: [Node] Finished "embedder".
+INFO: Post-treating /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-badaga_run-01_sbref.json file
+INFO: Converting /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-badaga_run-02_sbref (1 DICOMs) -> /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func . Converter: dcm2niix . Output types: ('nii.gz',)
+250114-17:44:42,97 nipype.workflow INFO:
+	 [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixsk477k24/convert".
+INFO: [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixsk477k24/convert".
+250114-17:44:42,108 nipype.workflow INFO:
+	 [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_task-badaga_run-02_sbref_heudiconv015 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func -s n -v n /scratch/slurm-4829686/dcm2niixsk477k24/convert
+INFO: [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_task-badaga_run-02_sbref_heudiconv015 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func -s n -v n /scratch/slurm-4829686/dcm2niixsk477k24/convert
+250114-17:44:42,504 nipype.interface INFO:
+	 stdout 2025-01-14T17:44:42.504099:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+INFO: stdout 2025-01-14T17:44:42.504099:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+250114-17:44:42,504 nipype.interface INFO:
+	 stdout 2025-01-14T17:44:42.504099:Found 1 DICOM file(s)
+INFO: stdout 2025-01-14T17:44:42.504099:Found 1 DICOM file(s)
+250114-17:44:42,504 nipype.interface INFO:
+	 stdout 2025-01-14T17:44:42.504099:Convert 1 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-badaga_run-02_sbref_heudiconv015 (104x104x72x1)
+INFO: stdout 2025-01-14T17:44:42.504099:Convert 1 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-badaga_run-02_sbref_heudiconv015 (104x104x72x1)
+250114-17:44:42,559 nipype.interface INFO:
+	 stdout 2025-01-14T17:44:42.559132:Conversion required 0.237984 seconds (0.120000 for core code).
+INFO: stdout 2025-01-14T17:44:42.559132:Conversion required 0.237984 seconds (0.120000 for core code).
+250114-17:44:42,597 nipype.workflow INFO:
+	 [Node] Finished "convert".
+INFO: [Node] Finished "convert".
+250114-17:44:42,693 nipype.workflow INFO:
+	 [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmeta5k5qm0gt/embedder".
+INFO: [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmeta5k5qm0gt/embedder".
+250114-17:44:42,712 nipype.workflow INFO:
+	 [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+INFO: [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+250114-17:44:42,835 nipype.workflow INFO:
+	 [Node] Finished "embedder".
+INFO: [Node] Finished "embedder".
+INFO: Post-treating /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-badaga_run-02_sbref.json file
+INFO: Converting /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-badaga_run-03_sbref (1 DICOMs) -> /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func . Converter: dcm2niix . Output types: ('nii.gz',)
+250114-17:44:42,874 nipype.workflow INFO:
+	 [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixncqdq7k1/convert".
+INFO: [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixncqdq7k1/convert".
+250114-17:44:42,893 nipype.workflow INFO:
+	 [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_task-badaga_run-03_sbref_heudiconv454 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func -s n -v n /scratch/slurm-4829686/dcm2niixncqdq7k1/convert
+INFO: [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_task-badaga_run-03_sbref_heudiconv454 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func -s n -v n /scratch/slurm-4829686/dcm2niixncqdq7k1/convert
+250114-17:44:43,296 nipype.interface INFO:
+	 stdout 2025-01-14T17:44:43.296096:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+INFO: stdout 2025-01-14T17:44:43.296096:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+250114-17:44:43,296 nipype.interface INFO:
+	 stdout 2025-01-14T17:44:43.296096:Found 1 DICOM file(s)
+INFO: stdout 2025-01-14T17:44:43.296096:Found 1 DICOM file(s)
+250114-17:44:43,296 nipype.interface INFO:
+	 stdout 2025-01-14T17:44:43.296096:Convert 1 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-badaga_run-03_sbref_heudiconv454 (104x104x72x1)
+INFO: stdout 2025-01-14T17:44:43.296096:Convert 1 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-badaga_run-03_sbref_heudiconv454 (104x104x72x1)
+250114-17:44:43,352 nipype.interface INFO:
+	 stdout 2025-01-14T17:44:43.352600:Conversion required 0.240348 seconds (0.120000 for core code).
+INFO: stdout 2025-01-14T17:44:43.352600:Conversion required 0.240348 seconds (0.120000 for core code).
+250114-17:44:43,391 nipype.workflow INFO:
+	 [Node] Finished "convert".
+INFO: [Node] Finished "convert".
+250114-17:44:43,546 nipype.workflow INFO:
+	 [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetandn9awjb/embedder".
+INFO: [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetandn9awjb/embedder".
+250114-17:44:43,566 nipype.workflow INFO:
+	 [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+INFO: [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+250114-17:44:43,683 nipype.workflow INFO:
+	 [Node] Finished "embedder".
+INFO: [Node] Finished "embedder".
+INFO: Post-treating /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-badaga_run-03_sbref.json file
+INFO: Converting /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-alice_run-01_bold (610 DICOMs) -> /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func . Converter: dcm2niix . Output types: ('nii.gz',)
+250114-17:44:44,513 nipype.workflow INFO:
+	 [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niix2m788f8m/convert".
+INFO: [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niix2m788f8m/convert".
+250114-17:44:44,703 nipype.workflow INFO:
+	 [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_task-alice_run-01_bold_heudiconv874 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func -s n -v n /scratch/slurm-4829686/dcm2niix2m788f8m/convert
+INFO: [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_task-alice_run-01_bold_heudiconv874 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func -s n -v n /scratch/slurm-4829686/dcm2niix2m788f8m/convert
+250114-17:45:19,805 nipype.interface INFO:
+	 stdout 2025-01-14T17:45:19.805113:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+INFO: stdout 2025-01-14T17:45:19.805113:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+250114-17:45:19,816 nipype.interface INFO:
+	 stdout 2025-01-14T17:45:19.805113:Found 610 DICOM file(s)
+INFO: stdout 2025-01-14T17:45:19.805113:Found 610 DICOM file(s)
+250114-17:45:19,816 nipype.interface INFO:
+	 stdout 2025-01-14T17:45:19.805113:Convert 610 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-alice_run-01_bold_heudiconv874 (104x104x72x610)
+INFO: stdout 2025-01-14T17:45:19.805113:Convert 610 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-alice_run-01_bold_heudiconv874 (104x104x72x610)
+250114-17:45:58,732 nipype.interface INFO:
+	 stdout 2025-01-14T17:45:58.732516:Conversion required 73.686581 seconds (40.660000 for core code).
+INFO: stdout 2025-01-14T17:45:58.732516:Conversion required 73.686581 seconds (40.660000 for core code).
+250114-17:45:59,13 nipype.workflow INFO:
+	 [Node] Finished "convert".
+INFO: [Node] Finished "convert".
+250114-17:45:59,96 nipype.workflow INFO:
+	 [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetafx4wt1oj/embedder".
+INFO: [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetafx4wt1oj/embedder".
+250114-17:45:59,155 nipype.workflow INFO:
+	 [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+INFO: [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+250114-17:46:42,642 nipype.workflow INFO:
+	 [Node] Finished "embedder".
+INFO: [Node] Finished "embedder".
+INFO: Post-treating /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-alice_run-01_bold.json file
+INFO: Converting /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-alice_run-02_bold (610 DICOMs) -> /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func . Converter: dcm2niix . Output types: ('nii.gz',)
+250114-17:46:43,78 nipype.workflow INFO:
+	 [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixwp7bi837/convert".
+INFO: [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixwp7bi837/convert".
+250114-17:46:43,266 nipype.workflow INFO:
+	 [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_task-alice_run-02_bold_heudiconv797 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func -s n -v n /scratch/slurm-4829686/dcm2niixwp7bi837/convert
+INFO: [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_task-alice_run-02_bold_heudiconv797 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func -s n -v n /scratch/slurm-4829686/dcm2niixwp7bi837/convert
+250114-17:47:15,967 nipype.interface INFO:
+	 stdout 2025-01-14T17:47:15.967553:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+INFO: stdout 2025-01-14T17:47:15.967553:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+250114-17:47:15,969 nipype.interface INFO:
+	 stdout 2025-01-14T17:47:15.967553:Found 610 DICOM file(s)
+INFO: stdout 2025-01-14T17:47:15.967553:Found 610 DICOM file(s)
+250114-17:47:15,969 nipype.interface INFO:
+	 stdout 2025-01-14T17:47:15.967553:Convert 610 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-alice_run-02_bold_heudiconv797 (104x104x72x610)
+INFO: stdout 2025-01-14T17:47:15.967553:Convert 610 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-alice_run-02_bold_heudiconv797 (104x104x72x610)
+250114-17:47:54,292 nipype.interface INFO:
+	 stdout 2025-01-14T17:47:54.292244:Conversion required 70.723115 seconds (40.599998 for core code).
+INFO: stdout 2025-01-14T17:47:54.292244:Conversion required 70.723115 seconds (40.599998 for core code).
+250114-17:47:54,540 nipype.workflow INFO:
+	 [Node] Finished "convert".
+INFO: [Node] Finished "convert".
+250114-17:47:54,661 nipype.workflow INFO:
+	 [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetasi1q5oq1/embedder".
+INFO: [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetasi1q5oq1/embedder".
+250114-17:47:54,720 nipype.workflow INFO:
+	 [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+INFO: [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+250114-17:48:35,697 nipype.workflow INFO:
+	 [Node] Finished "embedder".
+INFO: [Node] Finished "embedder".
+INFO: Post-treating /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-alice_run-02_bold.json file
+INFO: Converting /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-alice_run-01_sbref (1 DICOMs) -> /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func . Converter: dcm2niix . Output types: ('nii.gz',)
+250114-17:48:35,966 nipype.workflow INFO:
+	 [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixgc_lye_b/convert".
+INFO: [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixgc_lye_b/convert".
+250114-17:48:35,973 nipype.workflow INFO:
+	 [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_task-alice_run-01_sbref_heudiconv661 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func -s n -v n /scratch/slurm-4829686/dcm2niixgc_lye_b/convert
+INFO: [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_task-alice_run-01_sbref_heudiconv661 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func -s n -v n /scratch/slurm-4829686/dcm2niixgc_lye_b/convert
+250114-17:48:36,421 nipype.interface INFO:
+	 stdout 2025-01-14T17:48:36.421095:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+INFO: stdout 2025-01-14T17:48:36.421095:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+250114-17:48:36,421 nipype.interface INFO:
+	 stdout 2025-01-14T17:48:36.421095:Found 1 DICOM file(s)
+INFO: stdout 2025-01-14T17:48:36.421095:Found 1 DICOM file(s)
+250114-17:48:36,421 nipype.interface INFO:
+	 stdout 2025-01-14T17:48:36.421095:Convert 1 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-alice_run-01_sbref_heudiconv661 (104x104x72x1)
+INFO: stdout 2025-01-14T17:48:36.421095:Convert 1 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-alice_run-01_sbref_heudiconv661 (104x104x72x1)
+250114-17:48:36,476 nipype.interface INFO:
+	 stdout 2025-01-14T17:48:36.476634:Conversion required 0.194655 seconds (0.120000 for core code).
+INFO: stdout 2025-01-14T17:48:36.476634:Conversion required 0.194655 seconds (0.120000 for core code).
+250114-17:48:36,537 nipype.workflow INFO:
+	 [Node] Finished "convert".
+INFO: [Node] Finished "convert".
+250114-17:48:36,616 nipype.workflow INFO:
+	 [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetacqf8lamm/embedder".
+INFO: [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetacqf8lamm/embedder".
+250114-17:48:36,631 nipype.workflow INFO:
+	 [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+INFO: [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+250114-17:48:36,738 nipype.workflow INFO:
+	 [Node] Finished "embedder".
+INFO: [Node] Finished "embedder".
+INFO: Post-treating /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-alice_run-01_sbref.json file
+INFO: Converting /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-alice_run-02_sbref (1 DICOMs) -> /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func . Converter: dcm2niix . Output types: ('nii.gz',)
+250114-17:48:36,774 nipype.workflow INFO:
+	 [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixdkni5zk4/convert".
+INFO: [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixdkni5zk4/convert".
+250114-17:48:36,781 nipype.workflow INFO:
+	 [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_task-alice_run-02_sbref_heudiconv542 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func -s n -v n /scratch/slurm-4829686/dcm2niixdkni5zk4/convert
+INFO: [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_task-alice_run-02_sbref_heudiconv542 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func -s n -v n /scratch/slurm-4829686/dcm2niixdkni5zk4/convert
+250114-17:48:37,195 nipype.interface INFO:
+	 stdout 2025-01-14T17:48:37.195097:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+INFO: stdout 2025-01-14T17:48:37.195097:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+250114-17:48:37,195 nipype.interface INFO:
+	 stdout 2025-01-14T17:48:37.195097:Found 1 DICOM file(s)
+INFO: stdout 2025-01-14T17:48:37.195097:Found 1 DICOM file(s)
+250114-17:48:37,195 nipype.interface INFO:
+	 stdout 2025-01-14T17:48:37.195097:Convert 1 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-alice_run-02_sbref_heudiconv542 (104x104x72x1)
+INFO: stdout 2025-01-14T17:48:37.195097:Convert 1 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-alice_run-02_sbref_heudiconv542 (104x104x72x1)
+250114-17:48:37,249 nipype.interface INFO:
+	 stdout 2025-01-14T17:48:37.249660:Conversion required 0.182831 seconds (0.120000 for core code).
+INFO: stdout 2025-01-14T17:48:37.249660:Conversion required 0.182831 seconds (0.120000 for core code).
+250114-17:48:37,284 nipype.workflow INFO:
+	 [Node] Finished "convert".
+INFO: [Node] Finished "convert".
+250114-17:48:37,361 nipype.workflow INFO:
+	 [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmeta8jvws0_l/embedder".
+INFO: [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmeta8jvws0_l/embedder".
+250114-17:48:37,377 nipype.workflow INFO:
+	 [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+INFO: [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+250114-17:48:37,485 nipype.workflow INFO:
+	 [Node] Finished "embedder".
+INFO: [Node] Finished "embedder".
+INFO: Post-treating /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/func/sub-SSP058_task-alice_run-02_sbref.json file
+INFO: Converting /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/dwi/sub-SSP058_dwi (103 DICOMs) -> /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/dwi . Converter: dcm2niix . Output types: ('nii.gz',)
+250114-17:48:37,557 nipype.workflow INFO:
+	 [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niix67q5t6dx/convert".
+INFO: [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niix67q5t6dx/convert".
+250114-17:48:37,594 nipype.workflow INFO:
+	 [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_dwi_heudiconv521 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/dwi -s n -v n /scratch/slurm-4829686/dcm2niix67q5t6dx/convert
+INFO: [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_dwi_heudiconv521 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/dwi -s n -v n /scratch/slurm-4829686/dcm2niix67q5t6dx/convert
+250114-17:48:45,271 nipype.interface INFO:
+	 stdout 2025-01-14T17:48:45.271097:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+INFO: stdout 2025-01-14T17:48:45.271097:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+250114-17:48:45,282 nipype.interface INFO:
+	 stdout 2025-01-14T17:48:45.271097:Found 103 DICOM file(s)
+INFO: stdout 2025-01-14T17:48:45.271097:Found 103 DICOM file(s)
+250114-17:48:45,282 nipype.interface INFO:
+	 stdout 2025-01-14T17:48:45.271097:Convert 103 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/dwi/sub-SSP058_dwi_heudiconv521 (120x120x75x103)
+INFO: stdout 2025-01-14T17:48:45.271097:Convert 103 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/dwi/sub-SSP058_dwi_heudiconv521 (120x120x75x103)
+250114-17:49:00,446 nipype.interface INFO:
+	 stdout 2025-01-14T17:49:00.446528:Conversion required 22.570620 seconds (15.690000 for core code).
+INFO: stdout 2025-01-14T17:49:00.446528:Conversion required 22.570620 seconds (15.690000 for core code).
+250114-17:49:00,495 nipype.workflow INFO:
+	 [Node] Finished "convert".
+INFO: [Node] Finished "convert".
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/dwi/sub-SSP058_dwi.json.
+250114-17:49:00,627 nipype.workflow INFO:
+	 [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmeta4n2pqclr/embedder".
+INFO: [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmeta4n2pqclr/embedder".
+250114-17:49:00,654 nipype.workflow INFO:
+	 [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+INFO: [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+250114-17:49:08,196 nipype.workflow INFO:
+	 [Node] Finished "embedder".
+INFO: [Node] Finished "embedder".
+INFO: Post-treating /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/dwi/sub-SSP058_dwi.json file
+INFO: Converting /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_acq-dwi_dir-AP_run-01_ge (75 DICOMs) -> /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap . Converter: dcm2niix . Output types: ('nii.gz',)
+250114-17:49:08,288 nipype.workflow INFO:
+	 [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niix7rgbznjo/convert".
+INFO: [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niix7rgbznjo/convert".
+250114-17:49:08,317 nipype.workflow INFO:
+	 [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_acq-dwi_dir-AP_run-01_ge_heudiconv242 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap -s n -v n /scratch/slurm-4829686/dcm2niix7rgbznjo/convert
+INFO: [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_acq-dwi_dir-AP_run-01_ge_heudiconv242 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap -s n -v n /scratch/slurm-4829686/dcm2niix7rgbznjo/convert
+250114-17:49:10,429 nipype.interface INFO:
+	 stdout 2025-01-14T17:49:10.429101:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+INFO: stdout 2025-01-14T17:49:10.429101:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+250114-17:49:10,429 nipype.interface INFO:
+	 stdout 2025-01-14T17:49:10.429101:Found 75 DICOM file(s)
+INFO: stdout 2025-01-14T17:49:10.429101:Found 75 DICOM file(s)
+250114-17:49:10,429 nipype.interface INFO:
+	 stdout 2025-01-14T17:49:10.429101:Convert 75 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_acq-dwi_dir-AP_run-01_ge_heudiconv242 (120x120x75x1)
+INFO: stdout 2025-01-14T17:49:10.429101:Convert 75 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_acq-dwi_dir-AP_run-01_ge_heudiconv242 (120x120x75x1)
+250114-17:49:10,558 nipype.interface INFO:
+	 stdout 2025-01-14T17:49:10.557963:Conversion required 1.836518 seconds (0.410000 for core code).
+INFO: stdout 2025-01-14T17:49:10.557963:Conversion required 1.836518 seconds (0.410000 for core code).
+250114-17:49:10,603 nipype.workflow INFO:
+	 [Node] Finished "convert".
+INFO: [Node] Finished "convert".
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_acq-dwi_dir-AP_run-01_ge.json.
+250114-17:49:10,672 nipype.workflow INFO:
+	 [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetaeqrzrinx/embedder".
+INFO: [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetaeqrzrinx/embedder".
+250114-17:49:10,693 nipype.workflow INFO:
+	 [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+INFO: [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+250114-17:49:13,414 nipype.workflow INFO:
+	 [Node] Finished "embedder".
+INFO: [Node] Finished "embedder".
+INFO: Post-treating /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_acq-dwi_dir-AP_run-01_ge.json file
+INFO: Converting /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_acq-dwi_dir-PA_run-01_ge (75 DICOMs) -> /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap . Converter: dcm2niix . Output types: ('nii.gz',)
+250114-17:49:13,469 nipype.workflow INFO:
+	 [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixed6e9vjs/convert".
+INFO: [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixed6e9vjs/convert".
+250114-17:49:13,497 nipype.workflow INFO:
+	 [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_acq-dwi_dir-PA_run-01_ge_heudiconv925 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap -s n -v n /scratch/slurm-4829686/dcm2niixed6e9vjs/convert
+INFO: [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_acq-dwi_dir-PA_run-01_ge_heudiconv925 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap -s n -v n /scratch/slurm-4829686/dcm2niixed6e9vjs/convert
+250114-17:49:15,588 nipype.interface INFO:
+	 stdout 2025-01-14T17:49:15.588096:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+INFO: stdout 2025-01-14T17:49:15.588096:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+250114-17:49:15,588 nipype.interface INFO:
+	 stdout 2025-01-14T17:49:15.588096:Found 75 DICOM file(s)
+INFO: stdout 2025-01-14T17:49:15.588096:Found 75 DICOM file(s)
+250114-17:49:15,588 nipype.interface INFO:
+	 stdout 2025-01-14T17:49:15.588096:Convert 75 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_acq-dwi_dir-PA_run-01_ge_heudiconv925 (120x120x75x1)
+INFO: stdout 2025-01-14T17:49:15.588096:Convert 75 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_acq-dwi_dir-PA_run-01_ge_heudiconv925 (120x120x75x1)
+250114-17:49:15,717 nipype.interface INFO:
+	 stdout 2025-01-14T17:49:15.717586:Conversion required 1.932146 seconds (0.390000 for core code).
+INFO: stdout 2025-01-14T17:49:15.717586:Conversion required 1.932146 seconds (0.390000 for core code).
+250114-17:49:15,762 nipype.workflow INFO:
+	 [Node] Finished "convert".
+INFO: [Node] Finished "convert".
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_acq-dwi_dir-PA_run-01_ge.json.
+250114-17:49:15,846 nipype.workflow INFO:
+	 [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetazwv_yzk6/embedder".
+INFO: [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetazwv_yzk6/embedder".
+250114-17:49:15,865 nipype.workflow INFO:
+	 [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+INFO: [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+250114-17:49:18,617 nipype.workflow INFO:
+	 [Node] Finished "embedder".
+INFO: [Node] Finished "embedder".
+INFO: Post-treating /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_acq-dwi_dir-PA_run-01_ge.json file
+INFO: Converting /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-t1w_echo-1_MPM (1408 DICOMs) -> /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat . Converter: dcm2niix . Output types: ('nii.gz',)
+250114-17:49:18,912 nipype.workflow INFO:
+	 [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixo1f9p4fl/convert".
+INFO: [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixo1f9p4fl/convert".
+250114-17:49:19,345 nipype.workflow INFO:
+	 [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_acq-t1w_echo-1_MPM_heudiconv574 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat -s n -v n /scratch/slurm-4829686/dcm2niixo1f9p4fl/convert
+INFO: [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_acq-t1w_echo-1_MPM_heudiconv574 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat -s n -v n /scratch/slurm-4829686/dcm2niixo1f9p4fl/convert
+250114-17:49:52,651 nipype.interface INFO:
+	 stdout 2025-01-14T17:49:52.651106:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+INFO: stdout 2025-01-14T17:49:52.651106:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+250114-17:49:52,662 nipype.interface INFO:
+	 stdout 2025-01-14T17:49:52.651106:Found 1408 DICOM file(s)
+INFO: stdout 2025-01-14T17:49:52.651106:Found 1408 DICOM file(s)
+250114-17:49:52,662 nipype.interface INFO:
+	 stdout 2025-01-14T17:49:52.651106:Slices not stacked: echo varies (TE 2.3, 6.9; echo 1, 3). Use 'merge 2D slices' option to force stacking
+INFO: stdout 2025-01-14T17:49:52.651106:Slices not stacked: echo varies (TE 2.3, 6.9; echo 1, 3). Use 'merge 2D slices' option to force stacking
+250114-17:49:52,662 nipype.interface INFO:
+	 stdout 2025-01-14T17:49:52.651106:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+INFO: stdout 2025-01-14T17:49:52.651106:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+250114-17:49:52,662 nipype.interface INFO:
+	 stdout 2025-01-14T17:49:52.651106:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-t1w_echo-1_MPM_heudiconv574_e1 (224x256x176x1)
+INFO: stdout 2025-01-14T17:49:52.651106:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-t1w_echo-1_MPM_heudiconv574_e1 (224x256x176x1)
+250114-17:49:54,134 nipype.interface INFO:
+	 stdout 2025-01-14T17:49:54.134084:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+INFO: stdout 2025-01-14T17:49:54.134084:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+250114-17:49:54,134 nipype.interface INFO:
+	 stdout 2025-01-14T17:49:54.134084:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-t1w_echo-1_MPM_heudiconv574_e3 (224x256x176x1)
+INFO: stdout 2025-01-14T17:49:54.134084:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-t1w_echo-1_MPM_heudiconv574_e3 (224x256x176x1)
+250114-17:49:55,555 nipype.interface INFO:
+	 stdout 2025-01-14T17:49:55.555085:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+INFO: stdout 2025-01-14T17:49:55.555085:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+250114-17:49:55,555 nipype.interface INFO:
+	 stdout 2025-01-14T17:49:55.555085:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-t1w_echo-1_MPM_heudiconv574_e7 (224x256x176x1)
+INFO: stdout 2025-01-14T17:49:55.555085:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-t1w_echo-1_MPM_heudiconv574_e7 (224x256x176x1)
+250114-17:49:57,10 nipype.interface INFO:
+	 stdout 2025-01-14T17:49:57.010088:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+INFO: stdout 2025-01-14T17:49:57.010088:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+250114-17:49:57,10 nipype.interface INFO:
+	 stdout 2025-01-14T17:49:57.010088:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-t1w_echo-1_MPM_heudiconv574_e5 (224x256x176x1)
+INFO: stdout 2025-01-14T17:49:57.010088:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-t1w_echo-1_MPM_heudiconv574_e5 (224x256x176x1)
+250114-17:49:58,489 nipype.interface INFO:
+	 stdout 2025-01-14T17:49:58.489083:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+INFO: stdout 2025-01-14T17:49:58.489083:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+250114-17:49:58,489 nipype.interface INFO:
+	 stdout 2025-01-14T17:49:58.489083:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-t1w_echo-1_MPM_heudiconv574_e8 (224x256x176x1)
+INFO: stdout 2025-01-14T17:49:58.489083:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-t1w_echo-1_MPM_heudiconv574_e8 (224x256x176x1)
+250114-17:49:59,919 nipype.interface INFO:
+	 stdout 2025-01-14T17:49:59.919085:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+INFO: stdout 2025-01-14T17:49:59.919085:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+250114-17:49:59,930 nipype.interface INFO:
+	 stdout 2025-01-14T17:49:59.919085:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-t1w_echo-1_MPM_heudiconv574_e4 (224x256x176x1)
+INFO: stdout 2025-01-14T17:49:59.919085:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-t1w_echo-1_MPM_heudiconv574_e4 (224x256x176x1)
+250114-17:50:01,349 nipype.interface INFO:
+	 stdout 2025-01-14T17:50:01.349093:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+INFO: stdout 2025-01-14T17:50:01.349093:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+250114-17:50:01,349 nipype.interface INFO:
+	 stdout 2025-01-14T17:50:01.349093:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-t1w_echo-1_MPM_heudiconv574_e6 (224x256x176x1)
+INFO: stdout 2025-01-14T17:50:01.349093:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-t1w_echo-1_MPM_heudiconv574_e6 (224x256x176x1)
+250114-17:50:02,760 nipype.interface INFO:
+	 stdout 2025-01-14T17:50:02.760090:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+INFO: stdout 2025-01-14T17:50:02.760090:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+250114-17:50:02,760 nipype.interface INFO:
+	 stdout 2025-01-14T17:50:02.760090:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-t1w_echo-1_MPM_heudiconv574_e2 (224x256x176x1)
+INFO: stdout 2025-01-14T17:50:02.760090:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-t1w_echo-1_MPM_heudiconv574_e2 (224x256x176x1)
+250114-17:50:03,851 nipype.interface INFO:
+	 stdout 2025-01-14T17:50:03.851542:Conversion required 44.211286 seconds (12.970000 for core code).
+INFO: stdout 2025-01-14T17:50:03.851542:Conversion required 44.211286 seconds (12.970000 for core code).
+250114-17:50:04,28 nipype.workflow INFO:
+	 [Node] Finished "convert".
+INFO: [Node] Finished "convert".
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-t1w_echo-1_echo-1_MPM.json.
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-t1w_echo-1_echo-2_MPM.json.
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-t1w_echo-1_echo-3_MPM.json.
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-t1w_echo-1_echo-4_MPM.json.
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-t1w_echo-1_echo-5_MPM.json.
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-t1w_echo-1_echo-6_MPM.json.
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-t1w_echo-1_echo-7_MPM.json.
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-t1w_echo-1_echo-8_MPM.json.
+WARNING: For now not embedding BIDS and info generated .nii.gz itself since sequence produced multiple files
+INFO: Converting /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-pd_echo-1_MPM (1408 DICOMs) -> /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat . Converter: dcm2niix . Output types: ('nii.gz',)
+250114-17:50:04,681 nipype.workflow INFO:
+	 [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixwxqn6xl2/convert".
+INFO: [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixwxqn6xl2/convert".
+250114-17:50:05,119 nipype.workflow INFO:
+	 [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_acq-pd_echo-1_MPM_heudiconv103 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat -s n -v n /scratch/slurm-4829686/dcm2niixwxqn6xl2/convert
+INFO: [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_acq-pd_echo-1_MPM_heudiconv103 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat -s n -v n /scratch/slurm-4829686/dcm2niixwxqn6xl2/convert
+250114-17:50:40,199 nipype.interface INFO:
+	 stdout 2025-01-14T17:50:40.199104:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+INFO: stdout 2025-01-14T17:50:40.199104:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+250114-17:50:40,210 nipype.interface INFO:
+	 stdout 2025-01-14T17:50:40.199104:Found 1408 DICOM file(s)
+INFO: stdout 2025-01-14T17:50:40.199104:Found 1408 DICOM file(s)
+250114-17:50:40,210 nipype.interface INFO:
+	 stdout 2025-01-14T17:50:40.199104:Slices not stacked: echo varies (TE 9.2, 4.6; echo 4, 2). Use 'merge 2D slices' option to force stacking
+INFO: stdout 2025-01-14T17:50:40.199104:Slices not stacked: echo varies (TE 9.2, 4.6; echo 4, 2). Use 'merge 2D slices' option to force stacking
+250114-17:50:40,210 nipype.interface INFO:
+	 stdout 2025-01-14T17:50:40.199104:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+INFO: stdout 2025-01-14T17:50:40.199104:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+250114-17:50:40,210 nipype.interface INFO:
+	 stdout 2025-01-14T17:50:40.199104:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-pd_echo-1_MPM_heudiconv103_e4 (224x256x176x1)
+INFO: stdout 2025-01-14T17:50:40.199104:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-pd_echo-1_MPM_heudiconv103_e4 (224x256x176x1)
+250114-17:50:41,617 nipype.interface INFO:
+	 stdout 2025-01-14T17:50:41.617084:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+INFO: stdout 2025-01-14T17:50:41.617084:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+250114-17:50:41,617 nipype.interface INFO:
+	 stdout 2025-01-14T17:50:41.617084:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-pd_echo-1_MPM_heudiconv103_e2 (224x256x176x1)
+INFO: stdout 2025-01-14T17:50:41.617084:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-pd_echo-1_MPM_heudiconv103_e2 (224x256x176x1)
+250114-17:50:43,36 nipype.interface INFO:
+	 stdout 2025-01-14T17:50:43.036080:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+INFO: stdout 2025-01-14T17:50:43.036080:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+250114-17:50:43,36 nipype.interface INFO:
+	 stdout 2025-01-14T17:50:43.036080:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-pd_echo-1_MPM_heudiconv103_e6 (224x256x176x1)
+INFO: stdout 2025-01-14T17:50:43.036080:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-pd_echo-1_MPM_heudiconv103_e6 (224x256x176x1)
+250114-17:50:44,475 nipype.interface INFO:
+	 stdout 2025-01-14T17:50:44.475082:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+INFO: stdout 2025-01-14T17:50:44.475082:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+250114-17:50:44,475 nipype.interface INFO:
+	 stdout 2025-01-14T17:50:44.475082:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-pd_echo-1_MPM_heudiconv103_e3 (224x256x176x1)
+INFO: stdout 2025-01-14T17:50:44.475082:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-pd_echo-1_MPM_heudiconv103_e3 (224x256x176x1)
+250114-17:50:45,893 nipype.interface INFO:
+	 stdout 2025-01-14T17:50:45.893083:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+INFO: stdout 2025-01-14T17:50:45.893083:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+250114-17:50:45,893 nipype.interface INFO:
+	 stdout 2025-01-14T17:50:45.893083:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-pd_echo-1_MPM_heudiconv103_e7 (224x256x176x1)
+INFO: stdout 2025-01-14T17:50:45.893083:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-pd_echo-1_MPM_heudiconv103_e7 (224x256x176x1)
+250114-17:50:47,333 nipype.interface INFO:
+	 stdout 2025-01-14T17:50:47.333086:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+INFO: stdout 2025-01-14T17:50:47.333086:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+250114-17:50:47,333 nipype.interface INFO:
+	 stdout 2025-01-14T17:50:47.333086:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-pd_echo-1_MPM_heudiconv103_e8 (224x256x176x1)
+INFO: stdout 2025-01-14T17:50:47.333086:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-pd_echo-1_MPM_heudiconv103_e8 (224x256x176x1)
+250114-17:50:48,794 nipype.interface INFO:
+	 stdout 2025-01-14T17:50:48.794083:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+INFO: stdout 2025-01-14T17:50:48.794083:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+250114-17:50:48,805 nipype.interface INFO:
+	 stdout 2025-01-14T17:50:48.794083:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-pd_echo-1_MPM_heudiconv103_e1 (224x256x176x1)
+INFO: stdout 2025-01-14T17:50:48.794083:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-pd_echo-1_MPM_heudiconv103_e1 (224x256x176x1)
+250114-17:50:50,262 nipype.interface INFO:
+	 stdout 2025-01-14T17:50:50.262083:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+INFO: stdout 2025-01-14T17:50:50.262083:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d8'
+250114-17:50:50,262 nipype.interface INFO:
+	 stdout 2025-01-14T17:50:50.262083:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-pd_echo-1_MPM_heudiconv103_e5 (224x256x176x1)
+INFO: stdout 2025-01-14T17:50:50.262083:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-pd_echo-1_MPM_heudiconv103_e5 (224x256x176x1)
+250114-17:50:51,381 nipype.interface INFO:
+	 stdout 2025-01-14T17:50:51.381835:Conversion required 45.857365 seconds (13.270000 for core code).
+INFO: stdout 2025-01-14T17:50:51.381835:Conversion required 45.857365 seconds (13.270000 for core code).
+250114-17:50:51,545 nipype.workflow INFO:
+	 [Node] Finished "convert".
+INFO: [Node] Finished "convert".
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-pd_echo-1_echo-1_MPM.json.
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-pd_echo-1_echo-2_MPM.json.
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-pd_echo-1_echo-3_MPM.json.
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-pd_echo-1_echo-4_MPM.json.
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-pd_echo-1_echo-5_MPM.json.
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-pd_echo-1_echo-6_MPM.json.
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-pd_echo-1_echo-7_MPM.json.
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-pd_echo-1_echo-8_MPM.json.
+WARNING: For now not embedding BIDS and info generated .nii.gz itself since sequence produced multiple files
+INFO: Converting /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-MTw_echo-1_mt-on_MPM (1056 DICOMs) -> /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat . Converter: dcm2niix . Output types: ('nii.gz',)
+250114-17:50:52,149 nipype.workflow INFO:
+	 [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niix2zx_gt7b/convert".
+INFO: [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niix2zx_gt7b/convert".
+250114-17:50:52,477 nipype.workflow INFO:
+	 [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_acq-MTw_echo-1_mt-on_MPM_heudiconv670 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat -s n -v n /scratch/slurm-4829686/dcm2niix2zx_gt7b/convert
+INFO: [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_acq-MTw_echo-1_mt-on_MPM_heudiconv670 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat -s n -v n /scratch/slurm-4829686/dcm2niix2zx_gt7b/convert
+250114-17:51:18,870 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:18.870106:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+INFO: stdout 2025-01-14T17:51:18.870106:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+250114-17:51:18,881 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:18.870106:Found 1056 DICOM file(s)
+INFO: stdout 2025-01-14T17:51:18.870106:Found 1056 DICOM file(s)
+250114-17:51:18,881 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:18.870106:Slices not stacked: echo varies (TE 9.2, 2.3; echo 4, 1). Use 'merge 2D slices' option to force stacking
+INFO: stdout 2025-01-14T17:51:18.870106:Slices not stacked: echo varies (TE 9.2, 2.3; echo 4, 1). Use 'merge 2D slices' option to force stacking
+250114-17:51:18,881 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:18.870106:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d6'
+INFO: stdout 2025-01-14T17:51:18.870106:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d6'
+250114-17:51:18,881 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:18.870106:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-MTw_echo-1_mt-on_MPM_heudiconv670_e4 (224x256x176x1)
+INFO: stdout 2025-01-14T17:51:18.870106:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-MTw_echo-1_mt-on_MPM_heudiconv670_e4 (224x256x176x1)
+250114-17:51:20,314 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:20.314082:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d6'
+INFO: stdout 2025-01-14T17:51:20.314082:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d6'
+250114-17:51:20,314 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:20.314082:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-MTw_echo-1_mt-on_MPM_heudiconv670_e1 (224x256x176x1)
+INFO: stdout 2025-01-14T17:51:20.314082:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-MTw_echo-1_mt-on_MPM_heudiconv670_e1 (224x256x176x1)
+250114-17:51:21,772 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:21.772083:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d6'
+INFO: stdout 2025-01-14T17:51:21.772083:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d6'
+250114-17:51:21,772 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:21.772083:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-MTw_echo-1_mt-on_MPM_heudiconv670_e2 (224x256x176x1)
+INFO: stdout 2025-01-14T17:51:21.772083:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-MTw_echo-1_mt-on_MPM_heudiconv670_e2 (224x256x176x1)
+250114-17:51:23,602 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:23.602085:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d6'
+INFO: stdout 2025-01-14T17:51:23.602085:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d6'
+250114-17:51:23,602 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:23.602085:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-MTw_echo-1_mt-on_MPM_heudiconv670_e3 (224x256x176x1)
+INFO: stdout 2025-01-14T17:51:23.602085:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-MTw_echo-1_mt-on_MPM_heudiconv670_e3 (224x256x176x1)
+250114-17:51:25,14 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:25.014083:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d6'
+INFO: stdout 2025-01-14T17:51:25.014083:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d6'
+250114-17:51:25,25 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:25.014083:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-MTw_echo-1_mt-on_MPM_heudiconv670_e5 (224x256x176x1)
+INFO: stdout 2025-01-14T17:51:25.014083:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-MTw_echo-1_mt-on_MPM_heudiconv670_e5 (224x256x176x1)
+250114-17:51:26,461 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:26.461089:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d6'
+INFO: stdout 2025-01-14T17:51:26.461089:::autoBids:Siemens CSAseqFname:'%CustomerSeq%\mfc_3dflash' pulseSeq:'' seqName:'fl3dr1n3d6'
+250114-17:51:26,461 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:26.461089:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-MTw_echo-1_mt-on_MPM_heudiconv670_e6 (224x256x176x1)
+INFO: stdout 2025-01-14T17:51:26.461089:Convert 176 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-MTw_echo-1_mt-on_MPM_heudiconv670_e6 (224x256x176x1)
+250114-17:51:27,572 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:27.572300:Conversion required 34.783637 seconds (9.800000 for core code).
+INFO: stdout 2025-01-14T17:51:27.572300:Conversion required 34.783637 seconds (9.800000 for core code).
+250114-17:51:27,697 nipype.workflow INFO:
+	 [Node] Finished "convert".
+INFO: [Node] Finished "convert".
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-MTw_echo-1_echo-1_mt-on_MPM.json.
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-MTw_echo-1_echo-2_mt-on_MPM.json.
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-MTw_echo-1_echo-3_mt-on_MPM.json.
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-MTw_echo-1_echo-4_mt-on_MPM.json.
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-MTw_echo-1_echo-5_mt-on_MPM.json.
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/anat/sub-SSP058_acq-MTw_echo-1_echo-6_mt-on_MPM.json.
+WARNING: For now not embedding BIDS and info generated .nii.gz itself since sequence produced multiple files
+INFO: Converting /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_acq-b1_echo-1_MPM (1056 DICOMs) -> /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap . Converter: dcm2niix . Output types: ('nii.gz',)
+250114-17:51:28,122 nipype.workflow INFO:
+	 [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixahawfa10/convert".
+INFO: [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixahawfa10/convert".
+250114-17:51:28,445 nipype.workflow INFO:
+	 [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_acq-b1_echo-1_MPM_heudiconv182 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap -s n -v n /scratch/slurm-4829686/dcm2niixahawfa10/convert
+INFO: [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_acq-b1_echo-1_MPM_heudiconv182 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap -s n -v n /scratch/slurm-4829686/dcm2niixahawfa10/convert
+250114-17:51:50,565 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:50.565103:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+INFO: stdout 2025-01-14T17:51:50.565103:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+250114-17:51:50,576 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:50.565103:Found 1056 DICOM file(s)
+INFO: stdout 2025-01-14T17:51:50.565103:Found 1056 DICOM file(s)
+250114-17:51:50,576 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:50.565103:Slices not stacked: echo varies (TE 39.06, 130; echo 1, 2). Use 'merge 2D slices' option to force stacking
+INFO: stdout 2025-01-14T17:51:50.565103:Slices not stacked: echo varies (TE 39.06, 130; echo 1, 2). Use 'merge 2D slices' option to force stacking
+250114-17:51:50,576 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:50.565103:Warning: Discrepancy between reported (0.5s) and estimated (12s) repetition time (issue 560).
+INFO: stdout 2025-01-14T17:51:50.565103:Warning: Discrepancy between reported (0.5s) and estimated (12s) repetition time (issue 560).
+250114-17:51:50,576 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:50.565103:Convert 528 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_acq-b1_echo-1_MPM_heudiconv182_e1 (48x64x48x11)
+INFO: stdout 2025-01-14T17:51:50.565103:Convert 528 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_acq-b1_echo-1_MPM_heudiconv182_e1 (48x64x48x11)
+250114-17:51:51,523 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:51.523083:Warning: Discrepancy between reported (0.5s) and estimated (12s) repetition time (issue 560).
+INFO: stdout 2025-01-14T17:51:51.523083:Warning: Discrepancy between reported (0.5s) and estimated (12s) repetition time (issue 560).
+250114-17:51:51,523 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:51.523083:Convert 528 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_acq-b1_echo-1_MPM_heudiconv182_e2 (48x64x48x11)
+INFO: stdout 2025-01-14T17:51:51.523083:Convert 528 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_acq-b1_echo-1_MPM_heudiconv182_e2 (48x64x48x11)
+250114-17:51:51,670 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:51.670124:Conversion required 22.944141 seconds (3.300000 for core code).
+INFO: stdout 2025-01-14T17:51:51.670124:Conversion required 22.944141 seconds (3.300000 for core code).
+250114-17:51:51,884 nipype.workflow INFO:
+	 [Node] Finished "convert".
+INFO: [Node] Finished "convert".
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_acq-b1_echo-1_echo-1_MPM.json.
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_acq-b1_echo-1_echo-2_MPM.json.
+WARNING: For now not embedding BIDS and info generated .nii.gz itself since sequence produced multiple files
+INFO: Converting /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_desc-fmap_echo-1_part-mag_gre_MPM (128 DICOMs) -> /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap . Converter: dcm2niix . Output types: ('nii.gz',)
+250114-17:51:52,353 nipype.workflow INFO:
+	 [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixmii591me/convert".
+INFO: [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niixmii591me/convert".
+250114-17:51:52,416 nipype.workflow INFO:
+	 [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_desc-fmap_echo-1_part-mag_gre_MPM_heudiconv455 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap -s n -v n /scratch/slurm-4829686/dcm2niixmii591me/convert
+INFO: [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_desc-fmap_echo-1_part-mag_gre_MPM_heudiconv455 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap -s n -v n /scratch/slurm-4829686/dcm2niixmii591me/convert
+250114-17:51:55,363 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:55.363098:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+INFO: stdout 2025-01-14T17:51:55.363098:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+250114-17:51:55,363 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:55.363098:Found 128 DICOM file(s)
+INFO: stdout 2025-01-14T17:51:55.363098:Found 128 DICOM file(s)
+250114-17:51:55,363 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:55.363098:Slices not stacked: echo varies (TE 12.46, 10; echo 2, 1). Use 'merge 2D slices' option to force stacking
+INFO: stdout 2025-01-14T17:51:55.363098:Slices not stacked: echo varies (TE 12.46, 10; echo 2, 1). Use 'merge 2D slices' option to force stacking
+250114-17:51:55,363 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:55.363098:Convert 64 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_desc-fmap_echo-1_part-mag_gre_MPM_heudiconv455_e2 (64x64x64x1)
+INFO: stdout 2025-01-14T17:51:55.363098:Convert 64 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_desc-fmap_echo-1_part-mag_gre_MPM_heudiconv455_e2 (64x64x64x1)
+250114-17:51:55,524 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:55.524083:Convert 64 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_desc-fmap_echo-1_part-mag_gre_MPM_heudiconv455_e1 (64x64x64x1)
+INFO: stdout 2025-01-14T17:51:55.524083:Convert 64 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_desc-fmap_echo-1_part-mag_gre_MPM_heudiconv455_e1 (64x64x64x1)
+250114-17:51:55,541 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:55.541887:Conversion required 2.741121 seconds (0.410000 for core code).
+INFO: stdout 2025-01-14T17:51:55.541887:Conversion required 2.741121 seconds (0.410000 for core code).
+250114-17:51:55,602 nipype.workflow INFO:
+	 [Node] Finished "convert".
+INFO: [Node] Finished "convert".
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_desc-fmap_echo-1_echo-1_part-mag_gre_MPM.json.
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_desc-fmap_echo-1_echo-2_part-mag_gre_MPM.json.
+WARNING: For now not embedding BIDS and info generated .nii.gz itself since sequence produced multiple files
+INFO: Converting /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_desc-fmap_echo-1_MPM (64 DICOMs) -> /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap . Converter: dcm2niix . Output types: ('nii.gz',)
+250114-17:51:55,778 nipype.workflow INFO:
+	 [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niix1a_uwsco/convert".
+INFO: [Node] Setting-up "convert" in "/scratch/slurm-4829686/dcm2niix1a_uwsco/convert".
+250114-17:51:55,809 nipype.workflow INFO:
+	 [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_desc-fmap_echo-1_MPM_heudiconv340 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap -s n -v n /scratch/slurm-4829686/dcm2niix1a_uwsco/convert
+INFO: [Node] Running "convert" ("nipype.interfaces.dcm2nii.Dcm2niix"), a CommandLine Interface with command:
+dcm2niix -b y -z y -x n -t n -m n -f sub-SSP058_desc-fmap_echo-1_MPM_heudiconv340 -o /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap -s n -v n /scratch/slurm-4829686/dcm2niix1a_uwsco/convert
+250114-17:51:57,509 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:57.509094:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+INFO: stdout 2025-01-14T17:51:57.509094:Chris Rorden's dcm2niiX version v1.0.20240202  (JP2:OpenJPEG) (JP-LS:CharLS) GCC8.4.0 x86-64 (64-bit Linux)
+250114-17:51:57,509 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:57.509094:Found 64 DICOM file(s)
+INFO: stdout 2025-01-14T17:51:57.509094:Found 64 DICOM file(s)
+250114-17:51:57,509 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:57.509094:Convert 64 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_desc-fmap_echo-1_MPM_heudiconv340_e2_ph (64x64x64x1)
+INFO: stdout 2025-01-14T17:51:57.509094:Convert 64 DICOM as /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_desc-fmap_echo-1_MPM_heudiconv340_e2_ph (64x64x64x1)
+250114-17:51:57,535 nipype.interface INFO:
+	 stdout 2025-01-14T17:51:57.535283:Conversion required 1.435766 seconds (0.220000 for core code).
+INFO: stdout 2025-01-14T17:51:57.535283:Conversion required 1.435766 seconds (0.220000 for core code).
+250114-17:51:57,576 nipype.workflow INFO:
+	 [Node] Finished "convert".
+INFO: [Node] Finished "convert".
+WARNING: Failed to find task field in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_desc-fmap_echo-1_MPM.json.
+250114-17:51:57,636 nipype.workflow INFO:
+	 [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetafgjhy4u_/embedder".
+INFO: [Node] Setting-up "embedder" in "/scratch/slurm-4829686/embedmetafgjhy4u_/embedder".
+250114-17:51:57,653 nipype.workflow INFO:
+	 [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+INFO: [Node] Running "embedder" ("nipype.interfaces.utility.wrappers.Function")
+250114-17:51:59,696 nipype.workflow INFO:
+	 [Node] Finished "embedder".
+INFO: [Node] Finished "embedder".
+INFO: Post-treating /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058/fmap/sub-SSP058_desc-fmap_echo-1_MPM.json file
+INFO: Adding "IntendedFor" to the fieldmaps in /bgfs/bchandrasekaran/krs228/data/SSP/test_data_bids/sub-SSP058.
+Traceback (most recent call last):
+  File "/bgfs/bchandrasekaran/krs228/software/miniconda3/envs/py3/bin/heudiconv", line 8, in <module>
+    sys.exit(main())
+  File "/bgfs/bchandrasekaran/krs228/software/miniconda3/envs/py3/lib/python3.9/site-packages/heudiconv/cli/run.py", line 24, in main
+    workflow(**kwargs)
+  File "/bgfs/bchandrasekaran/krs228/software/miniconda3/envs/py3/lib/python3.9/site-packages/heudiconv/main.py", line 379, in workflow
+    prep_conversion(sid,
+  File "/bgfs/bchandrasekaran/krs228/software/miniconda3/envs/py3/lib/python3.9/site-packages/heudiconv/convert.py", line 207, in prep_conversion
+    convert(cinfo,
+  File "/bgfs/bchandrasekaran/krs228/software/miniconda3/envs/py3/lib/python3.9/site-packages/heudiconv/convert.py", line 602, in convert
+    populate_intended_for(session_path, **populate_intended_for_opts)
+  File "/bgfs/bchandrasekaran/krs228/software/miniconda3/envs/py3/lib/python3.9/site-packages/heudiconv/bids.py", line 904, in populate_intended_for
+    compatible_fmaps = find_compatible_fmaps_for_session(
+  File "/bgfs/bchandrasekaran/krs228/software/miniconda3/envs/py3/lib/python3.9/site-packages/heudiconv/bids.py", line 757, in find_compatible_fmaps_for_session
+    compatible_fmaps = {
+  File "/bgfs/bchandrasekaran/krs228/software/miniconda3/envs/py3/lib/python3.9/site-packages/heudiconv/bids.py", line 758, in <dictcomp>
+    j: find_compatible_fmaps_for_run(j, fmap_groups, matching_parameters)
+  File "/bgfs/bchandrasekaran/krs228/software/miniconda3/envs/py3/lib/python3.9/site-packages/heudiconv/bids.py", line 699, in find_compatible_fmaps_for_run
+    fm_info = get_key_info_for_fmap_assignment(fm_group[0], param)
+  File "/bgfs/bchandrasekaran/krs228/software/miniconda3/envs/py3/lib/python3.9/site-packages/heudiconv/bids.py", line 661, in get_key_info_for_fmap_assignment
+    return key_info
+UnboundLocalError: local variable 'key_info' referenced before assignment

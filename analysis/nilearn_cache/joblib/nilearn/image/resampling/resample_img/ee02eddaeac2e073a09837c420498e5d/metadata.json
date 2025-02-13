@@ -1,0 +1,1 @@
+{"duration": 0.04348182678222656, "input_args": {"img": "<nibabel.nifti1.Nifti1Image object at 0x7f8cf46ad880>", "target_affine": "None", "target_shape": "None", "interpolation": "'nearest'", "copy": "False", "order": "'F'", "clip": "True", "fill_value": "0", "force_resample": "False"}}
