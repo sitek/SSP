@@ -38,7 +38,7 @@ deriv_dir = os.path.join(bidsroot, 'derivatives')
 nilearn_dir = os.path.join(deriv_dir, 'nilearn')
 
 # masking function
-def generate_mask(subject_id, fmriprep_dir, statmap_example_fpath, out_dir, space_label):
+def generate_mask(subject_id, fmriprep_dir, func_example_fpath, out_dir, space_label):
     from nilearn.image import resample_to_img
     
     # read in the overall brain mask
@@ -53,7 +53,7 @@ def generate_mask(subject_id, fmriprep_dir, statmap_example_fpath, out_dir, spac
     #gm_bin_img = binarize_img(gm_img, threshold=0.9)
     gm_bin_img = binarize_img(gm_img, threshold=0)
 
-    mask_func_img = resample_to_img(gm_bin_img, statmap_example_fpath, interpolation='nearest')
+    mask_func_img = resample_to_img(gm_bin_img, func_example_fpath, interpolation='nearest')
     
     labelname = 'gm' # 'gm-thr90'
     out_fpath = os.path.join(out_dir, 'sub-%s_space-%s_mask-%s.nii.gz'%(subject_id, space_label, labelname))
@@ -62,7 +62,7 @@ def generate_mask(subject_id, fmriprep_dir, statmap_example_fpath, out_dir, spac
     return out_fpath
 
 ''' run function ''' 
-statmap_example_fpath = sorted(glob(fmriprep_dir+f'/sub-{subject_id}*/func/*MNI*bold.nii.gz'))[0]
+func_example_fpath = sorted(glob(fmriprep_dir+f'/sub-{subject_id}*/func/*MNI*bold.nii.gz'))[0]
 
 sub_mask_dir = os.path.join(nilearn_dir, 'masks', 'sub-%s'%subject_id, 
                             'space-%s'%space_label, 'masks-gm')   
