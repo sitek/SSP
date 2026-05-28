@@ -25,7 +25,7 @@ from glob import glob
 
 parser = argparse.ArgumentParser(
                 description='Create subject-specific searchlight RSA',
-                epilog=('Example: python rsa_searchlight.py --sub=FLT02 '
+                epilog=('Example: python rsa_searchlight.py --sub=SSP002 '
                         ' --space=MNI152NLin2009cAsym '
                         ' --analysis_window=run '
                         ' --fwhm=1.5 --searchrad=3'
@@ -147,8 +147,15 @@ def create_RDM_img(test_model, SL_RDM, data, mask_img):
 ''' Make models '''
 
 # Define categorical variables
+'''
+# if nilearn's save_glm_to_bids outputs
 snrs = ["Q", "8", "0", "N2", "N6"]  # 5 SNRs
 syllables = ["ba", "da", "ga", "ma"]  # 4 Syllables
+talkers = ["F1", "F2", "M1", "M2"]  # 4 Talkers
+'''
+# if nib.save() outputs
+snrs = ["Q", "8", "0", "n2", "n6"]  # 5 SNRs
+syllables = ["BA", "DA", "GA", "MA"]  # 4 Syllables
 talkers = ["F1", "F2", "M1", "M2"]  # 4 Talkers
 
 # Generate all possible stimuli (5 SNRs × 4 Syllables × 4 Talkers = 80 stimuli)
@@ -160,7 +167,7 @@ pattern_descriptors = {
     for idx, stim in enumerate(stimuli)
 }
 
-# Initialize RDMs (96x96 matrices)
+# Initialize RDMs (80x80 matrices)
 rdm_snr = np.zeros((80, 80), dtype=int)
 rdm_syllable = np.zeros((80, 80), dtype=int)
 rdm_talker = np.zeros((80, 80), dtype=int)
@@ -206,10 +213,10 @@ all_models = [model_snr, model_syllable, model_talker]
 
 ''' Get searchlight and RDMs '''
 mask_fpath = os.path.join(mask_dir, 
-                          'sub-{}'.format(sub_id),
-                          'space-{}'.format(space_label), 
+                          f'sub-{sub_id}',
+                          f'space-{space_label}', 
                           'masks-gm',
-                          'sub-{}_space-{}_mask-gm.nii.gz'.format(sub_id, space_label))
+                          f'sub-{sub_id}_space-{space_label}_mask-gm.nii.gz')
 
 mask_img = nib.load(mask_fpath)
 mask_data = mask_img.get_fdata()
@@ -224,34 +231,48 @@ centers, neighbors = get_volume_searchlight(mask_data,
 
 
 if analysis_window == 'session':
-    model_desc = 'run-all'
+    model_desc = 'run-all_eventtype-stimulus'
+    
     # set this path to wherever you saved the folder containing the img-files
-    data_folder = os.path.join(model_dir, 
-                               'sub-{}_space-{}'.format(sub_id, space_label),
-                               model_desc)
+    sub_model_folder = os.path.join(deriv_dir, 'nilearn', model_desc, f'sub-{sub_id}')
+    print('sub_model_folder:', sub_model_folder)
+    
+    print('img directory:', sub_model_folder)
+    
+    print('creating searchlight RDMs for', model_desc)
 
-    print(data_folder)
-    image_paths = sorted(glob(f'{data_folder}/*contrast-{contrast_label}*map-tstat.nii.gz'))
+    # get image files per stimulus
+    # order the same as the RDMs
+    image_paths = []
+    for talk in talkers:
+        for syll in syllables:
+            for snr in snrs:
+                #tss_label = f'{syll}{talk}{snr}' # if save_glm_to_bids outputs
+                tss_label = f'{syll}_{talk}_{snr}'
+                stim_img_fpath = glob(f'{sub_model_folder}/*contrast-{tss_label}*stat-t_statmap.nii.gz')[0]
+                #print('stim_img_fpath:', stim_img_fpath)
+                image_paths.append(stim_img_fpath)
+
     assert len(image_paths)
+    #print('image files:', image_paths)
 
     SL_RDM, data = get_searchlight_rdm(mask_data, image_paths, centers, neighbors)
 
     # define output path
-    out_dir = os.path.join(model_dir, 
-                           'sub-{}_space-{}'.format(sub_id, space_label),
-                           'rsa-searchlight_fwhm-{}_searchvox-{}_{}'.format(fwhm, searchrad, model_desc))
+    out_dir = os.path.join(deriv_dir, 'nilearn', 
+                           'rsa-searchlight_run-all', 
+                           f'sub-{sub_id}', )
     if not os.path.exists(out_dir):
             os.makedirs(out_dir)
 
     # ## Compare RDMs
     for mi, test_model in enumerate(all_models): # cat_models
-
         plot_img = create_RDM_img(test_model, SL_RDM, data, mask_img)
 
         model_id = test_model.name.split(' ')[0]
 
         # #### Save correlation image
-        sub_outname = (f'sub-{sub_id}_fwhm-{fwhm}_'+
+        sub_outname = (f'sub-{sub_id}_run-all_fwhm-{fwhm}_'+
                        f'searchvox-{searchrad}_rsa-searchlight_'+
                        f'contrast-{contrast_label}_model-{model_id}.nii.gz')
         out_fpath = os.path.join(out_dir, sub_outname)
@@ -268,10 +289,11 @@ elif analysis_window == 'run':
     
     print('img directory:', sub_model_folder)
     
-    run_design_fpaths = glob(sub_model_folder+'/*run*design.tsv')
-    print('run design files:', run_design_fpaths)
+    #run_design_fpaths = glob(sub_model_folder+'/*run*design.tsv')
+    #print('run design files:', run_design_fpaths)
     
-    n_runs = len(run_design_fpaths)
+    #n_runs = len(run_design_fpaths)
+    n_runs = 3
     print('number of runs:', n_runs)
     
     for rx in range(n_runs):
@@ -285,7 +307,9 @@ elif analysis_window == 'run':
         for talk in talkers:
             for syll in syllables:
                 for snr in snrs:
-                    stim_img_fpath = glob(f'{sub_model_folder}/*run-{run_label}_contrast-{syll}{talk}{snr}*stat-t_statmap.nii.gz')[0]
+                    #tss_label = f'{syll}{talk}{snr}' # if save_glm_to_bids outputs
+                    tss_label = f'{syll}_{talk}_{snr}'
+                    stim_img_fpath = glob(f'{sub_model_folder}/*run-{run_label}_contrast-{tss_label}*stat-t_statmap.nii.gz')[0]
                     #print('stim_img_fpath:', stim_img_fpath)
                     image_paths.append(stim_img_fpath)
         
@@ -295,7 +319,8 @@ elif analysis_window == 'run':
         SL_RDM, data = get_searchlight_rdm(mask_data, image_paths, centers, neighbors)
 
         # define output path
-        out_dir = os.path.join(deriv_dir, 'rsa-searchlight_run-specific', 
+        out_dir = os.path.join(deriv_dir, 'nilearn', 
+                               'rsa-searchlight_run-specific', 
                                f'sub-{sub_id}',
                                f'run-{run_label}', )
         if not os.path.exists(out_dir):

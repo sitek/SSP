@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --time=1-00
+#SBATCH --time=14:00:00
 #SBATCH --mem=32G
 #SBATCH --cpus-per-task=4
 
@@ -12,7 +12,8 @@ module add freesurfer
 module add fsl
 module add afni
 module add ants
-module add singularity/3.8.3
+module add singularity/
+#module add singularity/3.8.3
 
 #conda activate py3
 

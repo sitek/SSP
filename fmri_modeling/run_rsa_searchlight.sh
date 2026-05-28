@@ -8,7 +8,7 @@ bidsroot=/bgfs/bchandrasekaran/krs228/data/SSP/data_bids/
 
 python rsa_searchlight.py --sub=$1 \
     --space=MNI152NLin2009cAsym \
-    --analysis_window=run \
+    --analysis_window=session \
     --fwhm=0.00 \
     --searchrad=5 \
     --contrast=sound \

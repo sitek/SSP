@@ -149,20 +149,21 @@ def nilearn_glm_per_run(stim_list, task_label,
                         models_confounds,
                         out_dir,
                         model_type='LSA'):
-    from nilearn.reporting import make_glm_report
+    import nibabel as nib
     from nilearn.interfaces.bids import save_glm_to_bids
     from nilearn.interfaces.fmriprep import load_confounds_strategy
     
     midx = 0 # only 1 subject per analysis
     model = models[midx]
-    
+
+    # set limited confounds
+    print('selecting confounds')
+    imgs = models_run_imgs[midx]
+    confounds_ltd, sample_mask = load_confounds_strategy(img_files=imgs, 
+                                                         denoise_strategy='compcor')    
     #contrast_list = stim_list
     for contrast_label in stim_list:
-        # set limited confounds
-        print('selecting confounds')
-        imgs = models_run_imgs[midx]
-        confounds_ltd, sample_mask = load_confounds_strategy(img_files=imgs, 
-                                                             denoise_strategy='compcor')
+
         for rx in range(len(confounds_ltd)):
             img = models_run_imgs[midx][rx]
             confound = confounds_ltd[rx]
@@ -184,12 +185,19 @@ def nilearn_glm_per_run(stim_list, task_label,
             # save model outputs
             out_prefix = f"sub-{model.subject_label}_task-{task_label}_" + \
                          f"fwhm-{model.smoothing_fwhm}_run-{rx+1}"
+            '''
             save_glm_to_bids(model, 
                              contrast_label,
                              out_dir=out_dir,
                              prefix=out_prefix,
                             )
-            print(f'Saved model outputs to {bidsderiv_dir}')
+            '''
+            # currently a JSONDecodeError ^^
+            t_stat = model.compute_contrast(contrast_label, output_type='stat')
+            os.makedirs(os.path.join(out_dir, f'sub-{model.subject_label}'), exist_ok=True)
+            nib.save(t_stat, os.path.join(out_dir, f'sub-{model.subject_label}',
+                                          out_prefix+f'_contrast-{contrast_label}_stat-t_statmap.nii.gz'))
+            print(f'Saved model outputs to {out_dir}')
 
     return summary_statistics
 
@@ -201,9 +209,9 @@ def nilearn_glm_across_runs(stim_list, task_label,
                             models_confounds,
                             out_dir,
                             model_type='LSA'):
-    from nilearn.reporting import make_glm_report
     from nilearn.interfaces.bids import save_glm_to_bids
     from nilearn.interfaces.fmriprep import load_confounds_strategy
+    import nibabel as nib
     
     midx = 0 # only 1 subject per analysis
     model = models[midx]
@@ -235,12 +243,19 @@ def nilearn_glm_across_runs(stim_list, task_label,
         # save model outputs
         out_prefix = f"sub-{model.subject_label}_task-{task_label}_" + \
                      f"fwhm-{model.smoothing_fwhm}_run-all"
+        '''
         save_glm_to_bids(model, 
                          contrast_label,
                          out_dir=out_dir,
                          prefix=out_prefix,
                         )
-        print(f'Saved model outputs to {bidsderiv_dir}')
+        '''
+        # currently a JSONDecodeError ^^
+        t_stat = model.compute_contrast(contrast_label, output_type='stat')
+        os.makedirs(os.path.join(out_dir, f'sub-{model.subject_label}'), exist_ok=True)
+        nib.save(t_stat, os.path.join(out_dir, f'sub-{model.subject_label}',
+                                      out_prefix+f'_contrast-{contrast_label}_stat-t_statmap.nii.gz'))
+        print(f'Saved model outputs to {out_dir}')
 
     return summary_statistics
 
