@@ -30,13 +30,14 @@ Run roughly in this order. Each stage is its own top-level directory.
      `analysis/SSP011_mean_normT2star.csv`)
    - `mask_trial_betas.py` — mask single-trial beta maps for downstream multivariate analysis
 
-5. **`fmri_modeling/`** — First- and group-level GLM and multivariate analysis. See below.
+5. **`univariate_fmri/`** and **`multivariate_fmri/`** — First- and group-level GLM analysis,
+   split into two independent tracks. See below.
 
 6. **`behavior/`** — Behavioral data analysis and participant demographics/covariates
    (`behavior_analysis.ipynb`, `participant_covariates.ipynb`), which feed the group-level
-   covariates used in `fmri_modeling/`.
+   covariates used in `univariate_fmri/` and `multivariate_fmri/`.
 
-## `fmri_modeling/`: univariate pipeline
+## `univariate_fmri/`: univariate pipeline
 
 The univariate GLM pipeline (nilearn-based) has two stages, run in order:
 
@@ -92,13 +93,29 @@ in the group analysis. Steps, in notebook order:
 
 Mosaic figures are saved to `data_bids/derivatives/nilearn/group_run-all/`.
 
-### Multivariate / RSA
+### Other notebooks in `univariate_fmri/`
 
-`multivariate_first-level.py` + `run_multivariate_first-level.sh` / `loop_run_multivariate_first-level.sh`
-(per-run or per-trial LSA/LSS modeling), `GLMsingle.ipynb`, and `rsa_searchlight.py` +
-`run_rsa_searchlight.sh` / `loop_run_rsa_searchlight.sh` (searchlight RSA) — a separate track from
-the univariate pipeline above, feeding `group_level_all_ROI.ipynb` and
-`group_level_rsa_searchlight_WIP.ipynb`.
+- `group_level_all_ROI.ipynb` — ROI-based (rather than whole-brain) comparison of the SNR
+  contrasts across a cortical-network atlas, with omnibus ANOVA stats across ROIs.
+- `plot_first-level_outputs.ipynb` — quick visualization of individual first-level `sound`
+  contrast maps, ahead of/alongside the full group-level notebook.
+
+## `multivariate_fmri/`: multivariate / RSA pipeline
+
+A separate track from the univariate pipeline above, sharing the same first-level/group-level
+shape but modeling single-trial (rather than condition-averaged) responses:
+
+- `multivariate_first-level.py` + `run_multivariate_first-level.sh` /
+  `loop_run_multivariate_first-level.sh` — per-run or per-trial (LSA/LSS) first-level modeling,
+  CLI-driven the same way as the univariate script (`sbatch run_multivariate_first-level.sh
+  <sub-id>`, or `bash loop_run_multivariate_first-level.sh` for the full cohort).
+  `multivariate_first-level.ipynb` is the interactive counterpart.
+- `GLMsingle.ipynb` — [GLMsingle](https://glmsingle.readthedocs.io/)-based single-trial beta
+  estimation, an alternative to the LSA/LSS approach above.
+- `rsa_searchlight.py` + `run_rsa_searchlight.sh` / `loop_run_rsa_searchlight.sh` — searchlight
+  representational similarity analysis (RSA) over the single-trial betas.
+- `group_level_rsa_searchlight_WIP.ipynb` — group-level aggregation of the searchlight RSA maps
+  (work in progress).
 
 ## Open items before publication
 
