@@ -71,8 +71,11 @@ bidsderiv_dir = os.path.join(bidsroot,
                              'derivatives',
                              'nilearn',
                              f'run-all_contrast-{event_type}' if event_type == 'snr' else 'run-all')
-if not os.path.exists(bidsderiv_dir):
-    os.makedirs(bidsderiv_dir)
+# exist_ok=True instead of check-then-create: run_univariate_first-level.sh is launched once per
+# subject via loop_run_univariate_first-level.sh, and every subject's job targets this same
+# shared directory -- a plain `if not exists: makedirs` races when jobs start close together and
+# more than one passes the exists check before either creates the directory.
+os.makedirs(bidsderiv_dir, exist_ok=True)
 print('output directory:', bidsderiv_dir)
 
 
@@ -154,9 +157,16 @@ def nilearn_glm_across_runs(stim_list, task_label,
         'mean_fd': pd.Series(fd_by_run).mean(),
         **{f'mean_fd_run-{rx + 1}': fd for rx, fd in enumerate(fd_by_run)},
     }])
-    motion_qc_fpath = os.path.join(out_dir, 'motion_qc.csv')
-    motion_qc_row.to_csv(motion_qc_fpath, mode='a',
-                         header=not os.path.exists(motion_qc_fpath), index=False)
+    # One file per subject, not a shared appended motion_qc.csv: like the output directory
+    # above, every subject's job would otherwise be appending to the same file from parallel
+    # SLURM jobs, which can duplicate/interleave rows with no locking in place. Each job only
+    # ever writes its own subject's file, so there's nothing to race. The subject's output
+    # subdirectory already exists at this point (save_glm_to_bids creates it), but create it
+    # here too in case contrast saving hasn't run yet.
+    subject_out_dir = os.path.join(out_dir, f'sub-{model.subject_label}')
+    os.makedirs(subject_out_dir, exist_ok=True)
+    motion_qc_fpath = os.path.join(subject_out_dir, f'sub-{model.subject_label}_motion_qc.csv')
+    motion_qc_row.to_csv(motion_qc_fpath, index=False)
 
     # fit the GLM once
     print('fitting GLM')
