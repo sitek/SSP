@@ -141,19 +141,13 @@ def nilearn_glm_across_runs(stim_list, task_label,
     # FD/DVARS-based volume censoring on top of compcor + motion regressors; sample_mask is
     # passed into model.fit() below so scrubbing actually takes effect.
     # fd_threshold/std_dvars_threshold are set explicitly to fMRIPrep's own conventional values
-    # (0.5mm / 1.5) rather than left at nilearn's current strategy defaults (fd_threshold=0.2,
-    # std_dvars_threshold=3 as of this nilearn version -- nilearn's own deprecation warning says
-    # these are "inconsistent with the fMRIPrep default" and will change to 0.5/1.5 in a future
-    # release). In practice the 0.2mm default was so strict for this pediatric/speech-motion-heavy
-    # task that it flagged *every* volume in some runs as a motion outlier, which crashes
-    # model.fit() below with an opaque "zero-size array" error on the resulting empty sample_mask
-    # (see the run-dropping guard further down, which now also handles this case explicitly).
+    # (0.5mm / 1.5).
     # Confirm with the PI whether 0.5mm/1.5 is still too strict for this population -- some
     # developmental/clinical studies use a more lenient FD threshold (e.g. 0.9mm).
     print('selecting confounds and motion-scrubbing mask')
     confounds_ltd, sample_mask = load_confounds_strategy(img_files=imgs,
                                                          denoise_strategy='scrubbing',
-                                                         fd_threshold=0.5,
+                                                         fd_threshold=0.9,
                                                          std_dvars_threshold=1.5)
 
     # first_level_from_bids (and load_confounds_strategy, mirroring its input) return bare,
