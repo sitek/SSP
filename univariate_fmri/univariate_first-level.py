@@ -59,8 +59,12 @@ t_r = args.t_r
 bidsroot = args.bidsroot
 fmriprep_dir = args.fmriprep_dir
 
-# correct the fmriprep-given slice reference (middle slice, or 0.5)
-slice_time_ref = 0.5 * t_acq / t_r
+# NOTE: slice_time_ref is intentionally NOT computed/passed here. It used to be hand-derived as
+# 0.5 * t_acq / t_r (a "middle slice" guess for a naive continuous acquisition), but that guess
+# doesn't match this dataset's actual slice-timing protocol -- nilearn warned that the provided
+# value (0.5) differed from what it read from the BIDS bold.json metadata (0.174). Leaving
+# slice_time_ref=None below lets first_level_from_bids infer the correct value directly from
+# that metadata instead of silently overriding it with a wrong hand-computed one.
 
 print('bidsroot:', bidsroot)
 print('fmriprep dir:', fmriprep_dir)
@@ -208,7 +212,7 @@ models, models_run_imgs, \
                                                  sub_labels=[subject_id],
                                                  smoothing_fwhm=fwhm,
                                                  derivatives_folder=fmriprep_dir,
-                                                 slice_time_ref=slice_time_ref,
+                                                 slice_time_ref=None,  # infer from BIDS metadata, see note above
                                                  minimize_memory=False)
 
 stim_list, models_events = update_events(raw_models_events,
