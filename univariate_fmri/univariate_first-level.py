@@ -139,13 +139,50 @@ def nilearn_glm_across_runs(stim_list, task_label,
     # Select confounds + a motion-based censoring mask ONCE per subject. 'scrubbing' adds
     # FD/DVARS-based volume censoring on top of compcor + motion regressors; sample_mask is
     # passed into model.fit() below so scrubbing actually takes effect.
-    # FD/DVARS thresholds here are nilearn's 'scrubbing' preset defaults (fd_threshold=0.5mm,
-    # std_dvars_threshold=1.5) -- confirm with the PI whether these are appropriate for this
-    # pediatric/stuttering population, where task-related orofacial/vocal motion during speech
-    # trials may differ from adult norms.
+    # fd_threshold/std_dvars_threshold are set explicitly to fMRIPrep's own conventional values
+    # (0.5mm / 1.5) rather than left at nilearn's current strategy defaults (fd_threshold=0.2,
+    # std_dvars_threshold=3 as of this nilearn version -- nilearn's own deprecation warning says
+    # these are "inconsistent with the fMRIPrep default" and will change to 0.5/1.5 in a future
+    # release). In practice the 0.2mm default was so strict for this pediatric/speech-motion-heavy
+    # task that it flagged *every* volume in some runs as a motion outlier, which crashes
+    # model.fit() below with an opaque "zero-size array" error on the resulting empty sample_mask
+    # (see the run-dropping guard further down, which now also handles this case explicitly).
+    # Confirm with the PI whether 0.5mm/1.5 is still too strict for this population -- some
+    # developmental/clinical studies use a more lenient FD threshold (e.g. 0.9mm).
     print('selecting confounds and motion-scrubbing mask')
     confounds_ltd, sample_mask = load_confounds_strategy(img_files=imgs,
-                                                         denoise_strategy='scrubbing')
+                                                         denoise_strategy='scrubbing',
+                                                         fd_threshold=0.5,
+                                                         std_dvars_threshold=1.5)
+
+    # Drop any run where scrubbing censored more than half its volumes: fitting a run with an
+    # empty (or near-empty) sample_mask crashes deep inside nilearn with an unhelpful numpy error
+    # instead of a clear message, and a run that's mostly-censored contributes little useful
+    # signal anyway. MIN_RETAINED_FRACTION is a QC convention, not derived from this data -- revisit
+    # with the PI if it's excluding more runs/subjects than expected.
+    MIN_RETAINED_FRACTION = 0.5
+    keep_runs = []
+    for rx, mask in enumerate(sample_mask):
+        n_total = len(confounds_ltd[rx])
+        n_retained = n_total if mask is None else len(mask)
+        frac_retained = n_retained / n_total
+        if frac_retained < MIN_RETAINED_FRACTION:
+            print(f'WARNING: run {rx + 1} had only {frac_retained:.0%} of volumes retained after '
+                 f'motion scrubbing (< {MIN_RETAINED_FRACTION:.0%} threshold) -- dropping this run.')
+        else:
+            keep_runs.append(rx)
+
+    if len(keep_runs) == 0:
+        raise RuntimeError(
+            f'All {len(imgs)} run(s) for sub-{model.subject_label} had excessive motion after '
+            f'scrubbing (< {MIN_RETAINED_FRACTION:.0%} volumes retained in every run) -- no '
+            'usable data for this subject.'
+        )
+    if len(keep_runs) < len(imgs):
+        imgs = [imgs[rx] for rx in keep_runs]
+        events = [events[rx] for rx in keep_runs]
+        confounds_ltd = [confounds_ltd[rx] for rx in keep_runs]
+        sample_mask = [sample_mask[rx] for rx in keep_runs]
 
     # Log per-subject mean framewise displacement from the raw per-run fMRIPrep confounds
     # tables first_level_from_bids already loaded into models_confounds. This manifest feeds
