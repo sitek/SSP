@@ -66,6 +66,7 @@ fmriprep_dir = args.fmriprep_dir
 # slice_time_ref=None below lets first_level_from_bids infer the correct value directly from
 # that metadata instead of silently overriding it with a wrong hand-computed one.
 
+print('participant ID:', subject_id)
 print('bidsroot:', bidsroot)
 print('fmriprep dir:', fmriprep_dir)
 
@@ -155,6 +156,18 @@ def nilearn_glm_across_runs(stim_list, task_label,
                                                          fd_threshold=0.5,
                                                          std_dvars_threshold=1.5)
 
+    # first_level_from_bids (and load_confounds_strategy, mirroring its input) return bare,
+    # non-list values for imgs/events/confounds_ltd/sample_mask when a subject has exactly one
+    # run, instead of length-1 lists -- confirmed by a KeyError here for a single-run subject
+    # (confounds_ltd[0] was being treated as DataFrame column indexing, not list indexing,
+    # because confounds_ltd was a bare DataFrame). Normalize to lists so the per-run loop below
+    # and model.fit(..., sample_masks=...) can treat single-run and multi-run subjects the same way.
+    if not isinstance(confounds_ltd, list):
+        imgs = [imgs]
+        events = [events]
+        confounds_ltd = [confounds_ltd]
+        sample_mask = [sample_mask]
+
     # Drop any run where scrubbing censored more than half its volumes: fitting a run with an
     # empty (or near-empty) sample_mask crashes deep inside nilearn with an unhelpful numpy error
     # instead of a clear message, and a run that's mostly-censored contributes little useful
@@ -187,7 +200,12 @@ def nilearn_glm_across_runs(stim_list, task_label,
     # Log per-subject mean framewise displacement from the raw per-run fMRIPrep confounds
     # tables first_level_from_bids already loaded into models_confounds. This manifest feeds
     # the group-level motion covariate.
+    # Same single-run degeneration as above: models_confounds[midx] is a bare DataFrame (not a
+    # length-1 list) for single-run subjects, and `for rc in raw_confounds` over a bare DataFrame
+    # silently iterates its column names instead of the confounds table itself.
     raw_confounds = models_confounds[midx]
+    if not isinstance(raw_confounds, list):
+        raw_confounds = [raw_confounds]
     fd_by_run = []
     for rc in raw_confounds:
         rc_df = rc if isinstance(rc, pd.DataFrame) else pd.read_csv(rc, sep='\t')
