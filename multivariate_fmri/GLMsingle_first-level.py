@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 import argparse
 
 import numpy as np
@@ -253,25 +254,62 @@ manifest_fpath = os.path.join(subject_out_dir,
 manifest.to_csv(manifest_fpath, index=False)
 print(f'{len(manifest)} total trials across {len(design)} run(s); manifest saved to {manifest_fpath}')
 
+# GLMsingle's cross-validated denoising (wantglmdenoise/TYPEC) and ridge regularization
+# (wantfracridge/TYPED) both require at least one condition to repeat ACROSS runs, not just
+# within a single run -- GLMsingle silently disables both and falls back to TYPEB (FITHRF, no
+# cross-validated denoising/ridge) otherwise. We check for this ourselves and disable both
+# explicitly instead, so the decision is traceable here rather than only visible as a GLMsingle
+# UserWarning, and so downstream (GLMsingle_split-betas.py) knows which output type is this
+# subject's final estimate instead of discovering TYPED is simply missing. This was a real case,
+# not hypothetical: sub-SSP106 only has 1 badaga run on disk (likely the same undocumented reason
+# it's already excluded in univariate_group-level.ipynb's ignore_subs).
+runs_per_condition = manifest.groupby('condition')['run'].nunique()
+has_cross_run_repeats = bool((runs_per_condition > 1).any())
+
+if not has_cross_run_repeats:
+    print(f'WARNING: no condition repeats across runs for sub-{subject_id} ({len(design)} '
+         'run(s) found) -- GLMsingle\'s cross-validated denoising/ridge regularization needs '
+         'repeats across runs, not just within one. Disabling wantglmdenoise/wantfracridge '
+         'explicitly and using TYPEB_FITHRF as the final estimate for this subject instead of '
+         'TYPED_FITHRF_GLMDENOISE_RR.')
+    final_type = 'TYPEB_FITHRF'
+else:
+    final_type = 'TYPED_FITHRF_GLMDENOISE_RR'
+
+# Record which output type is this subject's final estimate. Downstream RSA work should only
+# ever use TYPED subjects (per the user: "I don't want to mix in some TypeB data with TypeD") --
+# GLMsingle_split-betas.py reads this to route TYPEB-derived betas into a physically separate
+# output directory, not just a metadata flag that could be missed.
+info_fpath = os.path.join(subject_out_dir, f'sub-{subject_id}_glmsingle_info.json')
+with open(info_fpath, 'w') as f:
+    json.dump({
+        'final_type': final_type,
+        'has_cross_run_repeats': has_cross_run_repeats,
+        'n_runs_used': len(design),
+    }, f, indent=2)
+
 # running python GLMsingle involves creating a GLM_single object and then running the
 # procedure using the .fit() routine
 opt = dict()
 opt['wantlibrary'] = 1
-opt['wantglmdenoise'] = 1
-opt['wantfracridge'] = 1
+opt['wantglmdenoise'] = 1 if has_cross_run_repeats else 0
+opt['wantfracridge'] = 1 if has_cross_run_repeats else 0
 opt['wantfileoutputs'] = [1, 1, 1, 1]
-opt['wantmemoryoutputs'] = [0, 0, 0, 1]  # only need TYPED (the recommended final estimate) in memory
+opt['wantmemoryoutputs'] = [0, 0, 0, 0]  # never used in-memory here -- GLMsingle_split-betas.py
+                                          # always reloads from disk, and requesting a type that
+                                          # may not even be computed just produces a confusing
+                                          # "nothing selected to return" message for no benefit
 
 glmsingle_obj = GLM_single(opt)
 print(glmsingle_obj.params)
 
-# Idempotency check on the TYPED output specifically, not just the output directory's existence:
-# subject_out_dir already exists by this point (created above to hold motion_qc.csv/the
-# manifest), so checking directory existence alone would always skip re-running GLMsingle even
-# if a prior run crashed before finishing the fit.
-typed_fpath = os.path.join(subject_out_dir, 'TYPED_FITHRF_GLMDENOISE_RR.npy')
-if os.path.exists(typed_fpath):
-    print(f'GLMsingle TYPED output already exists for sub-{subject_id}:\n\t{typed_fpath}')
+# Idempotency check on this subject's actual final-type output, not just the output directory's
+# existence: subject_out_dir already exists by this point (created above to hold
+# motion_qc.csv/the manifest), so checking directory existence alone would always skip re-running
+# GLMsingle even if a prior run crashed before finishing the fit.
+final_type_fpath = os.path.join(subject_out_dir, f'{final_type}.npy')
+if os.path.exists(final_type_fpath):
+    print(f'GLMsingle {final_type} output already exists for sub-{subject_id}:\n\t{final_type_fpath}')
 else:
     print(f'Running GLMsingle for sub-{subject_id}...')
     results_glmsingle = glmsingle_obj.fit(

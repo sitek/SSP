@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 import argparse
 
 import numpy as np
@@ -50,13 +51,13 @@ print('participant ID:', subject_id)
 bidsderiv_dir = os.path.join(bidsroot, 'derivatives', 'glmsingle')
 subject_out_dir = os.path.join(bidsderiv_dir, f'sub-{subject_id}')
 
-typed_fpath = os.path.join(subject_out_dir, 'TYPED_FITHRF_GLMDENOISE_RR.npy')
+info_fpath = os.path.join(subject_out_dir, f'sub-{subject_id}_glmsingle_info.json')
 manifest_fpath = os.path.join(subject_out_dir,
                               f'sub-{subject_id}_task-{task_label}_desc-trialbetas_manifest.csv')
 
-if not os.path.exists(typed_fpath):
+if not os.path.exists(info_fpath):
     raise FileNotFoundError(
-        f'No GLMsingle TYPED output found for sub-{subject_id} at {typed_fpath} -- '
+        f'No GLMsingle info file found for sub-{subject_id} at {info_fpath} -- '
         'run GLMsingle_first-level.py for this subject first.'
     )
 if not os.path.exists(manifest_fpath):
@@ -65,11 +66,38 @@ if not os.path.exists(manifest_fpath):
         'run GLMsingle_first-level.py for this subject first.'
     )
 
+with open(info_fpath) as f:
+    info = json.load(f)
+# GLMsingle_first-level.py records which output type is this subject's final single-trial
+# estimate: TYPED_FITHRF_GLMDENOISE_RR (cross-validated denoising + ridge) when the subject has
+# at least one condition repeating across runs, or TYPEB_FITHRF (no cross-validated denoising/
+# ridge -- GLMsingle can't do that with only within-run repeats) otherwise. Load whichever this
+# subject actually has, instead of hardcoding TYPED.
+final_type = info['final_type']
+
+final_type_fpath = os.path.join(subject_out_dir, f'{final_type}.npy')
+if not os.path.exists(final_type_fpath):
+    raise FileNotFoundError(
+        f'{info_fpath} says sub-{subject_id}\'s final type is {final_type}, but '
+        f'{final_type_fpath} does not exist -- re-run GLMsingle_first-level.py for this subject.'
+    )
+
 manifest = pd.read_csv(manifest_fpath)
 
-print(f'Loading GLMsingle TYPED output from {typed_fpath}')
-results_typed = np.load(typed_fpath, allow_pickle=True).item()
-betasmd = results_typed['betasmd']
+print(f'Loading GLMsingle {final_type} output from {final_type_fpath}')
+results = np.load(final_type_fpath, allow_pickle=True).item()
+# 'betasmd' is documented as a common field across GLMsingle's output types (TYPEA/B/C/D all
+# expose beta estimates under this key) -- not independently confirmed for TYPEB specifically
+# against an actual installed GLMsingle, since none is available locally. If this KeyErrors on
+# a real TYPEB-only subject, check `results.keys()` and update the key name here.
+try:
+    betasmd = results['betasmd']
+except KeyError:
+    raise KeyError(
+        f"'{final_type}' output for sub-{subject_id} has no 'betasmd' key (has: "
+        f"{list(results.keys())}) -- GLMsingle's non-TYPED output types may use a different key "
+        "name for beta estimates than assumed here; update this script once confirmed."
+    )
 
 # Validate the trial count matches the manifest before trusting any labeling -- this is a
 # direct, data-driven check (rather than assuming a fixed run/condition/repeat structure, as
@@ -119,14 +147,26 @@ if not isinstance(imgs, list):
     imgs = [imgs]
 affine = nib.load(imgs[0]).affine
 
-out_dir = os.path.join(subject_out_dir, 'beta_images')
+# Keep TYPEB (degraded, no cross-run denoising/ridge) and TYPED (cross-validated) output
+# physically separate, not just tagged in metadata -- the user explicitly does not want RSA
+# work to mix TypeB subjects in with TypeD ones, and a JSON marker alone is too easy for a
+# downstream script's glob to miss. beta_images/ is the default, RSA-ready location and only
+# ever contains TYPED output; a naive `glob('sub-*/beta_images/*.nii.gz')` (e.g. exactly what
+# FLT2/rsa_roi.py already does) structurally cannot pick up a TYPEB subject by accident --
+# including one requires deliberately pointing at beta_images_degraded-typeb/ instead.
+if final_type == 'TYPED_FITHRF_GLMDENOISE_RR':
+    out_dir = os.path.join(subject_out_dir, 'beta_images')
+    desc_tag = 'typed'
+else:
+    out_dir = os.path.join(subject_out_dir, 'beta_images_degraded-typeb')
+    desc_tag = 'typeb'
 os.makedirs(out_dir, exist_ok=True)
 
 for _, row in manifest.iterrows():
     vol = betasmd[..., int(row['trial_index'])]
     fname = (f"sub-{subject_id}_run-{int(row['run']):02d}_stim-{row['condition']}"
-            f"_rep-{int(row['rep']):02d}.nii.gz")
+            f"_rep-{int(row['rep']):02d}_desc-{desc_tag}.nii.gz")
     img = nib.Nifti1Image(vol.astype(np.float32), affine)
     nib.save(img, os.path.join(out_dir, fname))
 
-print(f'Saved {len(manifest)} per-trial beta images to {out_dir}')
+print(f'Saved {len(manifest)} per-trial beta images ({final_type}) to {out_dir}')
