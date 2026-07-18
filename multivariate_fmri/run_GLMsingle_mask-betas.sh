@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --time=1:00:00
+#SBATCH --time=4:00:00
 #SBATCH --mem=16G
 
 bidsroot=/bgfs/bchandrasekaran/krs228/data/SSP/data_bids/
