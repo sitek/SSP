@@ -1,4 +1,5 @@
 import os
+import warnings
 import numpy as np
 import nibabel as nib
 import matplotlib.pyplot as plt
@@ -114,11 +115,19 @@ def project_roi_stats_to_surface(
         hemi = _hemisphere_for_region(region_hemi)
         mask_path = mask_path_dict[region_hemi]
 
-        vertex_coverage = surface.vol_to_surf(
-            mask_path,
-            (out[hemi]['coords_pial'], out[hemi]['faces_pial']),
-            interpolation=interpolation,
-        )
+        # vol_to_surf samples every vertex on the WHOLE hemisphere surface against this one
+        # small ROI mask; most vertices are far enough away that no in-mask voxels fall within
+        # the sampling kernel, giving an all-NaN slice and a "Mean of empty slice" RuntimeWarning
+        # from nilearn's internal np.nanmean. Benign here -- those vertices correctly end up
+        # below coverage_thresh and get excluded right below -- but noisy across many ROIs x
+        # vertices, so suppress just this specific message rather than all RuntimeWarnings.
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore', message='Mean of empty slice')
+            vertex_coverage = surface.vol_to_surf(
+                mask_path,
+                (out[hemi]['coords_pial'], out[hemi]['faces_pial']),
+                interpolation=interpolation,
+            )
         roi_vertices = vertex_coverage > coverage_thresh
 
         out[hemi]['texture'][roi_vertices] = stat_value
