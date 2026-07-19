@@ -54,13 +54,11 @@ print('participant ID:', subject_id)
 # present in analysis/make_atlas_region_masks.py's roi_dict_MNI_dseg and already have masks
 # generated under masks-dseg/ from the earlier univariate ROI analysis -- no new mask generation
 # needed here, just reuse.
+# Ordered all-L-then-all-R (not per-network L/R blocks) so the two halves mirror each other
+# region-for-region -- makes hemisphere comparisons in downstream plots easier to read.
 CORTICAL_ROI_LIST = [
-    # auditory network
-    'L-HG', 'L-PT', 'L-PP', 'L-STGp', 'L-STGa', 'L-ParsOp', 'L-ParsTri',
-    'R-HG', 'R-PT', 'R-PP', 'R-STGp', 'R-STGa', 'R-ParsOp', 'R-ParsTri',
-    # extended language network
-    'L-SMGa', 'L-SMGp', 'L-Ang',
-    'R-SMGa', 'R-SMGp', 'R-Ang',
+    'L-HG', 'L-PT', 'L-PP', 'L-STGp', 'L-STGa', 'L-ParsOp', 'L-ParsTri', 'L-SMGa', 'L-SMGp', 'L-Ang',
+    'R-HG', 'R-PT', 'R-PP', 'R-STGp', 'R-STGa', 'R-ParsOp', 'R-ParsTri', 'R-SMGa', 'R-SMGp', 'R-Ang',
 ]
 
 glmsingle_dir = os.path.join(bidsroot, 'derivatives', 'glmsingle')

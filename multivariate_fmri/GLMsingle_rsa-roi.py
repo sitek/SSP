@@ -52,13 +52,12 @@ deriv_dir = os.path.join(bidsroot, 'derivatives')
 model_dir = os.path.join(deriv_dir, 'glmsingle')
 
 # Same 20-ROI cortical list as GLMsingle_mask-betas.py (14 auditory + 6 extended language
-# network) -- kept in sync with that script.
+# network) -- kept in sync with that script. Ordered all-L-then-all-R (mirrored) rather than
+# per-network L/R blocks, for easier hemisphere comparisons in downstream plots.
 network_name = 'cortical'
 roi_list = [
-    'L-HG', 'L-PT', 'L-PP', 'L-STGp', 'L-STGa', 'L-ParsOp', 'L-ParsTri',
-    'R-HG', 'R-PT', 'R-PP', 'R-STGp', 'R-STGa', 'R-ParsOp', 'R-ParsTri',
-    'L-SMGa', 'L-SMGp', 'L-Ang',
-    'R-SMGa', 'R-SMGp', 'R-Ang',
+    'L-HG', 'L-PT', 'L-PP', 'L-STGp', 'L-STGa', 'L-ParsOp', 'L-ParsTri', 'L-SMGa', 'L-SMGp', 'L-Ang',
+    'R-HG', 'R-PT', 'R-PP', 'R-STGp', 'R-STGa', 'R-ParsOp', 'R-ParsTri', 'R-SMGa', 'R-SMGp', 'R-Ang',
 ]
 
 model_folder = os.path.join(model_dir, 'masked_statmaps', f'sub-{subject_id}', 'statmaps_masked')
