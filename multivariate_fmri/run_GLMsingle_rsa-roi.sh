@@ -9,6 +9,7 @@ bidsroot=/bgfs/bchandrasekaran/krs228/data/SSP/data_bids/
 # 'Q'), pass --noise_level=Q as an extra positional arg when invoking this script manually, e.g.:
 #   sbatch run_GLMsingle_rsa-roi.sh SSP009 --noise_level=Q
 python GLMsingle_rsa-roi.py --sub=$1 \
+                        --noise_level=Q \
                         --method=crossnobis \
                         --bidsroot=$bidsroot \
                         "${@:2}"
