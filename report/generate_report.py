@@ -1,27 +1,43 @@
 """Generate a self-contained HTML status report for the SSP CWS/CWNS speech-in-noise study.
 
 Produces report/SSP_status_report.html -- all figures are either base64-embedded PNGs already
-saved by univariate_fmri/group_level_all_ROI.ipynb and multivariate_fmri/GLMsingle_rsa-group.ipynb
-(brain maps, box+strip plots), or small summary charts built fresh here from the numeric CSVs
-those notebooks cache. No external CSS/JS dependencies, no nilearn/rsatoolbox required to run
-this script itself -- only pandas/numpy/matplotlib, so it can run anywhere the cached CSVs and
-PNGs have been copied to (a laptop, not necessarily the cluster), unlike the notebooks themselves.
+saved by univariate_fmri/group_level_all_ROI.ipynb, univariate_fmri/univariate_group-level.ipynb
+(whole-brain mosaics), or multivariate_fmri/GLMsingle_rsa-group.ipynb, or small summary charts
+built fresh here from the numeric CSVs/JSON those notebooks/scripts cache. No external CSS/JS
+dependencies, no nilearn/rsatoolbox required to run this script itself -- only pandas/numpy/
+matplotlib, so it can run anywhere the cached CSVs/JSON/PNGs have been copied to (a laptop, not
+necessarily the cluster), unlike the notebooks themselves.
 
-Modeled on the report-generator pattern already used for the acfMRI project
-(~/software/acfMRI/07_report/generate_report.py): cached numeric results in, one flat HTML file
-out, figures embedded rather than linked.
+Styling is deliberately plain (system sans-serif, white background, no dark-mode/CSS-variable
+machinery) -- modeled on ~/software/acfMRI/07_report/generate_report.py, not on a "designed"
+look.
+
+In addition to the group-level statistical results, this report builds a per-subject attrition
+ledger from three things already written to disk by the existing pipeline (no new
+instrumentation needed):
+  - L1_DIR/sub-*/sub-*_motion_qc.csv                    (univariate_first-level.py)
+  - GLMSINGLE_DIR/sub-*/sub-*_glmsingle_info.json        (GLMsingle_first-level.py)
+  - RDM_DIR/sub-*_glmsingle_cortical_..._rdms.hdf5       (GLMsingle_rsa-roi.py)
+plus a raw BIDS func/ listing (to count badaga runs actually on disk) and the hardcoded
+IGNORE_SUBS_REASONS below (mirrors group_level_all_ROI.ipynb's `ignore_subs` cell -- update both
+together if that list changes). This is what answers "why is this subject missing": no
+first-level output yet, high motion, or -- for RSA specifically -- only one badaga run on disk
+(crossnobis needs a condition to repeat *across* runs, not just within one; GLMsingle silently
+downgrades single-run subjects to the TYPEB estimate, which is never used for RSA).
 
 Usage:
     python report/generate_report.py
 
 Requires the univariate and RSA group-level notebooks to have been run at least once (so the
-CSVs/PNGs referenced below exist under BIDSROOT). Missing files are skipped with a printed note,
-not a hard failure -- the report still builds with whatever is available.
+CSVs/PNGs/JSON referenced below exist under BIDSROOT). Missing files are skipped with a printed
+note, not a hard failure -- the report still builds with whatever is available.
 """
 
 import base64
 import io
+import json
 from datetime import date
+from glob import glob
 from pathlib import Path
 
 import matplotlib
@@ -37,14 +53,22 @@ NILEARN_DIR = BIDSROOT / 'derivatives' / 'nilearn'
 GLMSINGLE_DIR = BIDSROOT / 'derivatives' / 'glmsingle'
 
 FWHM = 6.00
-GROUP_OUT_DIR = NILEARN_DIR / f'group_fwhm-{FWHM:.2f}'
-RSA_OUT_DIR = GLMSINGLE_DIR / 'rsa-group_glmsingle'
+GROUP_OUT_DIR = NILEARN_DIR / f'group_fwhm-{FWHM:.2f}'            # ROI stats (group_level_all_ROI.ipynb)
+WHOLE_BRAIN_DIR = NILEARN_DIR / 'group_run-all'                    # whole-brain mosaic PNGs (univariate_group-level.ipynb)
+L1_DIR = NILEARN_DIR / 'run-all_contrast-snr'                      # per-subject first-level statmaps + motion_qc.csv
+
+RDM_METHOD = 'crossnobis'
 RSA_NOISE_LEVEL_TAG = 'Q'  # matches GLMsingle_rsa-group.ipynb's NOISE_LEVEL_TAG for the acoustic-model run
+RSA_OUT_DIR = GLMSINGLE_DIR / 'rsa-group_glmsingle'
+RDM_DIR = GLMSINGLE_DIR / f'rsa-roi_glmsingle_rdmcalc-{RDM_METHOD}'
 
 PARTICIPANTS_FPATH = BIDSROOT / 'participants.tsv'
 
 CONTRAST_LIST = ['q', '8', '0', 'n2', 'n6']
 WHOLE_BRAIN_CONTRASTS = ['q', '8', '0', 'n2', 'n6', 'qMinusN6', 'qMinus0', 'sound', 'response']
+# representative subset actually embedded as brain images below (all 9 x 3-group would be 27
+# large mosaic PNGs saved at dpi=1000 -- too much for one report). Change freely.
+BRAIN_MAP_CONTRASTS = ['q', 'qMinusN6', 'sound']
 
 # same 20-ROI cortical list used throughout the pipeline (GLMsingle_mask-betas.py,
 # GLMsingle_rsa-roi.py, GLMsingle_rsa-group.ipynb, group_level_all_ROI.ipynb)
@@ -59,6 +83,30 @@ CORTICAL_ROI_LIST = [
 GROUP_COLOR = {'CWNS': '#009E73', 'CWS': '#CC79A7'}
 HEMI_COLOR = {'L': '#0072B2', 'R': '#D55E00'}
 ACCENT = '#9C7A1B'
+MOTION_COLOR = '#D55E00'
+
+# subjects dropped before the pipeline even runs -- mirrors group_level_all_ROI.ipynb's
+# `ignore_subs` list (cell 9) and its inline comments. Keep in sync if that list changes; this
+# is genuinely institutional knowledge (why sub-SSP102 is out) that isn't recoverable from cached
+# files alone, so it's hardcoded rather than derived.
+IGNORE_SUBS_REASONS = {
+    'sub-SSP001': 'excluded pre-pipeline (no reason recorded in group_level_all_ROI.ipynb)',
+    'sub-SSP002': 'excluded pre-pipeline (no reason recorded in group_level_all_ROI.ipynb)',
+    'sub-SSP005': 'excluded pre-pipeline (no reason recorded in group_level_all_ROI.ipynb)',
+    'sub-SSP012': 'excluded pre-pipeline (no reason recorded in group_level_all_ROI.ipynb)',
+    'sub-SSP014': 'excluded pre-pipeline (no reason recorded in group_level_all_ROI.ipynb)',
+    'sub-SSP069': 'excluded pre-pipeline (no reason recorded in group_level_all_ROI.ipynb)',
+    'sub-SSP072': 'excluded pre-pipeline (no reason recorded in group_level_all_ROI.ipynb)',
+    'sub-SSP076': 'missing MRI files',
+    'sub-SSP102': 'participant left the scanner after a few minutes',
+    'sub-SSP098': 'still processing as of the last group-level run',
+    'sub-SSP105': 'still processing as of the last group-level run',
+    'sub-SSP106': ('still processing as of the last group-level run -- also only has 1 badaga run '
+                  'on disk, so would be RSA-ineligible (TYPEB, not TYPED) regardless'),
+    'sub-SSP107': ('still processing as of the last group-level run -- flagged in '
+                  'univariate_group-level.ipynb as excluded with no recorded reason even though '
+                  'first-level GLMs ARE computed; confirm before publication'),
+}
 
 
 # ── small helpers ──────────────────────────────────────────────────────────────
@@ -105,6 +153,10 @@ def _img_tag(b64, caption='', width='100%'):
         return '<p class="missing">[figure not available -- run the source notebook first]</p>'
     cap = f'<figcaption>{caption}</figcaption>' if caption else ''
     return f'<figure><img src="{b64}" style="width:{width};max-width:100%;">{cap}</figure>'
+
+def _brain_row(caption_prefix, contrast, group_tag):
+    b64 = img_from_file(WHOLE_BRAIN_DIR / f'group-{group_tag}_contrast-{contrast}_view-mosaic.png')
+    return _img_tag(b64, f'{caption_prefix} -- contrast-{contrast}, FDR cluster-corrected.', width='100%')
 
 
 def _df_to_table_html(df, css_class='data-table'):
@@ -154,7 +206,153 @@ def load_rsa_noise_ceiling():
     return read_csv_safe(RSA_OUT_DIR / f'noise_ceiling_noiselevel-{RSA_NOISE_LEVEL_TAG}.csv')
 
 
-# ── charts built fresh from cached CSVs ─────────────────────────────────────────
+# ── attrition ledger: per-subject, why are we losing them? ─────────────────────
+def count_raw_badaga_runs(sub_id):
+    """How many badaga BOLD runs exist on disk for this subject, before any motion-based
+    dropping. Comparing this to glmsingle_info.json's n_runs_used (post motion-drop) is what
+    distinguishes "only 1 run was ever collected" from "2+ runs were collected but 1 got dropped
+    for motion" -- glmsingle_info.json alone can't tell these apart, since n_runs_used is already
+    post-drop.
+    """
+    return len(glob(str(BIDSROOT / sub_id / 'func' / f'{sub_id}_task-badaga_run-*_bold.nii.gz')))
+
+
+def _univariate_status(sub_id):
+    """Returns (n_contrasts_found, mean_fd, status_label, reason) for one subject's univariate
+    first-level stage, mirroring group_level_all_ROI.ipynb's build_statmap_dict glob pattern
+    exactly so "contrasts found" here means the same thing it does in the ROI stage.
+    """
+    n_contrasts = sum(
+        1 for c in CONTRAST_LIST
+        if glob(str(L1_DIR / sub_id / f'*contrast-{c}_stat-effect_statmap.nii.gz'))
+    )
+    missing_contrasts = [c for c in CONTRAST_LIST
+                         if not glob(str(L1_DIR / sub_id / f'*contrast-{c}_stat-effect_statmap.nii.gz'))]
+
+    mfd_fpath = L1_DIR / sub_id / f'{sub_id}_motion_qc.csv'
+    mean_fd = None
+    if mfd_fpath.exists():
+        mfd_df = pd.read_csv(mfd_fpath)
+        if len(mfd_df) > 0 and 'mean_fd' in mfd_df.columns:
+            mean_fd = float(mfd_df['mean_fd'].iloc[0])
+
+    if n_contrasts == len(CONTRAST_LIST):
+        return n_contrasts, mean_fd, 'complete', f'{n_contrasts}/{len(CONTRAST_LIST)} SNR contrasts present.'
+    if n_contrasts == 0 and mean_fd is None:
+        return n_contrasts, mean_fd, 'no output', ('No first-level output found at all (no statmaps, '
+                                                    'no motion_qc.csv) -- not yet run, or crashed before '
+                                                    'saving anything. Check SLURM logs.')
+    if n_contrasts == 0 and mean_fd is not None and mean_fd > 0.9:
+        return n_contrasts, mean_fd, 'likely motion', (
+            f'0/{len(CONTRAST_LIST)} contrasts, mean FD = {mean_fd:.2f}mm (> the 0.9mm scrubbing '
+            'threshold used by univariate_first-level.py). Consistent with -- but not direct proof '
+            'of -- every run failing the >50% volumes-retained-after-scrubbing rule; the per-run '
+            'retained fraction itself isn\'t cached anywhere, only this subject-level mean FD.')
+    if n_contrasts == 0:
+        return n_contrasts, mean_fd, 'unexplained', (
+            f'0/{len(CONTRAST_LIST)} contrasts despite motion_qc.csv existing (mean FD = '
+            f'{mean_fd:.2f}mm, below the 0.9mm scrubbing threshold) -- not a motion story; '
+            'check SLURM logs for this subject.')
+    return n_contrasts, mean_fd, 'partial', (
+        f'{n_contrasts}/{len(CONTRAST_LIST)} SNR contrasts present; missing: {", ".join(missing_contrasts)}.')
+
+
+def _rsa_status(sub_id):
+    """Returns (n_runs_raw, n_runs_used, has_cross_run_repeats, final_type, mean_fd, has_rdm,
+    status_label, reason) for one subject's RSA/crossnobis eligibility.
+    """
+    n_runs_raw = count_raw_badaga_runs(sub_id)
+
+    info_fpath = GLMSINGLE_DIR / sub_id / f'{sub_id}_glmsingle_info.json'
+    n_runs_used = has_cross_run_repeats = final_type = None
+    if info_fpath.exists():
+        info = json.loads(info_fpath.read_text())
+        n_runs_used = info.get('n_runs_used')
+        has_cross_run_repeats = info.get('has_cross_run_repeats')
+        final_type = info.get('final_type')
+
+    mfd_fpath = GLMSINGLE_DIR / sub_id / f'{sub_id}_motion_qc.csv'
+    mean_fd = None
+    if mfd_fpath.exists():
+        mfd_df = pd.read_csv(mfd_fpath)
+        if len(mfd_df) > 0 and 'mean_fd' in mfd_df.columns:
+            mean_fd = float(mfd_df['mean_fd'].iloc[0])
+
+    has_rdm = bool(glob(str(
+        RDM_DIR / f'{sub_id}_glmsingle_cortical_{RDM_METHOD}_noiselevel-{RSA_NOISE_LEVEL_TAG}_rdms.hdf5'
+    )))
+
+    if has_rdm:
+        return (n_runs_raw, n_runs_used, has_cross_run_repeats, final_type, mean_fd, True,
+               'RSA-eligible', 'Has a crossnobis RDM -- contributes to RSA group analysis.')
+    if n_runs_raw == 0:
+        return (n_runs_raw, n_runs_used, has_cross_run_repeats, final_type, mean_fd, False,
+               'no badaga data', 'No badaga BOLD files found on disk at all -- a missing-file issue, not motion.')
+    if info_fpath.exists() is False:
+        return (n_runs_raw, n_runs_used, has_cross_run_repeats, final_type, mean_fd, False,
+               'GLMsingle not run', f'{n_runs_raw} badaga run(s) on disk, but GLMsingle_first-level.py hasn\'t been run for this subject yet.')
+    if has_cross_run_repeats is False and n_runs_raw <= 1:
+        return (n_runs_raw, n_runs_used, has_cross_run_repeats, final_type, mean_fd, False,
+               'single run (file issue)', (
+                   f'Only {n_runs_raw} badaga run on disk -- crossnobis needs a condition to repeat '
+                   'ACROSS runs, so GLMsingle falls back to the degraded TYPEB estimate, which is '
+                   'never used for RSA. This is a missing-data issue, not motion.'))
+    if has_cross_run_repeats is False and n_runs_raw >= 2:
+        return (n_runs_raw, n_runs_used, has_cross_run_repeats, final_type, mean_fd, False,
+               'run dropped for motion', (
+                   f'{n_runs_raw} badaga run(s) were on disk, but only {n_runs_used} survived '
+                   f'GLMsingle\'s motion QC (mean FD > 2.0mm drops a run) -- {"mean FD (kept runs) = %.2fmm. " % mean_fd if mean_fd is not None else ""}'
+                   'With only 1 usable run left, no condition can repeat across runs, so GLMsingle '
+                   'falls back to TYPEB and this subject is excluded from RSA. Here, motion IS the reason.'))
+    if final_type == 'TYPED_FITHRF_GLMDENOISE_RR' and not has_rdm:
+        return (n_runs_raw, n_runs_used, has_cross_run_repeats, final_type, mean_fd, False,
+               'RDM not computed', 'GLMsingle produced usable TYPED betas, but GLMsingle_rsa-roi.py hasn\'t been (re-)run for this subject yet.')
+    return (n_runs_raw, n_runs_used, has_cross_run_repeats, final_type, mean_fd, False,
+           'unclassified', 'Doesn\'t match a known pattern -- inspect this subject\'s glmsingle_info.json directly.')
+
+
+def build_attrition_ledger(participants_df):
+    """One row per enrolled participant (including pre-pipeline-excluded ones), with exactly
+    why they have/haven't reached the univariate and RSA stages. This is what backs the
+    "where are we losing participants" section -- every reason string here traces back to a
+    file already on disk, not a guess (except where explicitly flagged as inferred).
+    """
+    if participants_df is None:
+        return None
+    rows = []
+    for _, prow in participants_df.iterrows():
+        sub_id = prow['participant_id']
+        group = 'CWNS' if prow['group_norm'] == 'control' else 'CWS' if prow['group_norm'] == 'cws' else prow['group_norm']
+
+        if sub_id in IGNORE_SUBS_REASONS:
+            rows.append({
+                'participant_id': sub_id, 'group': group, 'pre_pipeline_excluded': True,
+                'pre_pipeline_reason': IGNORE_SUBS_REASONS[sub_id],
+                'n_snr_contrasts': 0, 'mean_fd_univariate': None,
+                'univariate_status': 'excluded pre-pipeline', 'univariate_reason': IGNORE_SUBS_REASONS[sub_id],
+                'n_badaga_runs_raw': None, 'n_runs_used_glmsingle': None, 'has_cross_run_repeats': None,
+                'mean_fd_glmsingle': None, 'has_rdm': False,
+                'rsa_status': 'excluded pre-pipeline', 'rsa_reason': IGNORE_SUBS_REASONS[sub_id],
+            })
+            continue
+
+        n_contrasts, mfd_uni, uni_status, uni_reason = _univariate_status(sub_id)
+        (n_runs_raw, n_runs_used, has_cross_run_repeats, final_type, mfd_glms, has_rdm,
+        rsa_status, rsa_reason) = _rsa_status(sub_id)
+
+        rows.append({
+            'participant_id': sub_id, 'group': group, 'pre_pipeline_excluded': False,
+            'pre_pipeline_reason': None,
+            'n_snr_contrasts': n_contrasts, 'mean_fd_univariate': mfd_uni,
+            'univariate_status': uni_status, 'univariate_reason': uni_reason,
+            'n_badaga_runs_raw': n_runs_raw, 'n_runs_used_glmsingle': n_runs_used,
+            'has_cross_run_repeats': has_cross_run_repeats, 'mean_fd_glmsingle': mfd_glms,
+            'has_rdm': has_rdm, 'rsa_status': rsa_status, 'rsa_reason': rsa_reason,
+        })
+    return pd.DataFrame(rows)
+
+
+# ── charts built fresh from cached CSVs / the attrition ledger ─────────────────
 def make_attrition_chart(participants_df, roi_long_df, rsa_model_fit_df):
     """Grouped bar chart: N subjects by pipeline stage, CWNS vs CWS. A genuine funnel (each
     stage is a strict subset of the previous), so bars are ordered stage-by-stage rather than
@@ -199,6 +397,57 @@ def make_attrition_chart(participants_df, roi_long_df, rsa_model_fit_df):
     return fig_to_b64(fig)
 
 
+def make_rsa_ineligibility_chart(ledger_df):
+    """The chart that directly answers "why isn't this subject in RSA": count of subjects (by
+    group) in each RSA-status category, restricted to subjects who made it past pre-pipeline
+    exclusion. Distinguishes the crossnobis/single-run case from the motion-dropped-a-run case
+    from a still-pending-processing case.
+    """
+    if ledger_df is None:
+        return None
+    df = ledger_df[~ledger_df.pre_pipeline_excluded]
+    if len(df) == 0:
+        return None
+
+    label_map = {
+        'RSA-eligible': 'RSA-eligible',
+        'single run (file issue)': 'Only 1 badaga run\n(crossnobis needs cross-run repeats)',
+        'run dropped for motion': 'Run dropped for motion\n(2+ runs -> 1 usable)',
+        'GLMsingle not run': 'GLMsingle not\nrun yet',
+        'RDM not computed': 'TYPED betas ready,\nRDM not computed yet',
+        'no badaga data': 'No badaga BOLD\nfound on disk',
+        'unclassified': 'Unclassified',
+    }
+    order = list(label_map.keys())
+    counts = df.groupby(['rsa_status', 'group']).size().unstack(fill_value=0)
+    for g in ('CWNS', 'CWS'):
+        if g not in counts.columns:
+            counts[g] = 0
+    counts = counts.reindex(order).fillna(0)
+
+    labels = [label_map[s] for s in counts.index]
+    x = np.arange(len(labels))
+    width = 0.32
+
+    fig, ax = plt.subplots(1, 1, figsize=(8, 4.5), dpi=150)
+    ax.bar(x - width / 2, counts['CWNS'], width, label='CWNS', color=GROUP_COLOR['CWNS'])
+    ax.bar(x + width / 2, counts['CWS'], width, label='CWS', color=GROUP_COLOR['CWS'])
+    for xi, n in zip(x - width / 2, counts['CWNS']):
+        if n > 0:
+            ax.text(xi, n + 0.3, str(int(n)), ha='center', va='bottom', fontsize=8)
+    for xi, n in zip(x + width / 2, counts['CWS']):
+        if n > 0:
+            ax.text(xi, n + 0.3, str(int(n)), ha='center', va='bottom', fontsize=8)
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels, fontsize=8)
+    ax.set_ylabel('N subjects')
+    ax.set_title('Why subjects are (not) RSA-eligible')
+    ax.legend(frameon=False)
+    ax.spines[['top', 'right']].set_visible(False)
+    fig.tight_layout()
+    return fig_to_b64(fig)
+
+
 def make_roi_hit_count_chart(within_group_stats_df):
     """Bar chart: count of FDR-significant ROI x SNR tests per group, out of 100 possible each
     (20 ROIs x 5 SNR levels) -- the headline power comparison between CWNS and CWS.
@@ -226,7 +475,8 @@ def make_roi_hit_count_chart(within_group_stats_df):
 
 def make_roi_direction_table(within_group_stats_df, group_name):
     """Per-region summary of FDR-significant hits for one group: how many of the 5 SNR levels
-    are significant, and in which direction (based on the sign of mean_beta).
+    are significant, in which direction (sign of mean_beta), and the mean |beta| among those
+    significant hits (effect-size context beyond the raw significance count).
     """
     if within_group_stats_df is None:
         return None
@@ -234,7 +484,7 @@ def make_roi_direction_table(within_group_stats_df, group_name):
         (within_group_stats_df.group == group_name) & (within_group_stats_df.p_fdr < 0.05)
     ].copy()
     if len(sig) == 0:
-        return pd.DataFrame(columns=['region_hemi', 'n_snr_significant', 'direction', 'SNR levels'])
+        return pd.DataFrame(columns=['ROI', 'SNR levels significant', 'direction', 'mean |beta|', 'at'])
 
     sig['direction'] = np.where(sig.mean_beta > 0, 'positive', 'negative')
     rows = []
@@ -245,10 +495,96 @@ def make_roi_direction_table(within_group_stats_df, group_name):
             'ROI': region_hemi,
             'SNR levels significant': len(group_df),
             'direction': direction_label,
+            'mean |beta|': group_df['mean_beta'].abs().mean(),
             'at': ', '.join(sorted(group_df['SNR'].astype(str))),
         })
     out = pd.DataFrame(rows).sort_values('SNR levels significant', ascending=False).reset_index(drop=True)
+    out['mean |beta|'] = out['mean |beta|'].map(lambda x: f'{x:.3f}')
     return out
+
+
+def make_descriptive_stats_table(participants_df, ledger_df):
+    """Basic per-group descriptive statistics (N, age, sex, motion) -- the "more statistics"
+    context that was previously only implicit in the enrolled-N stat tiles.
+    """
+    if participants_df is None:
+        return None
+    rows = []
+    for group_label, norm in [('CWNS', 'control'), ('CWS', 'cws')]:
+        gdf = participants_df[participants_df.group_norm == norm]
+        row = {'group': group_label, 'N enrolled': len(gdf)}
+        if 'age' in gdf.columns:
+            row['age, mean (SD)'] = f'{gdf.age.mean():.1f} ({gdf.age.std():.1f})'
+        if 'sex' in gdf.columns:
+            n_f = int((gdf.sex == 'F').sum())
+            row['sex (F/M)'] = f'{n_f}/{len(gdf) - n_f}'
+        if ledger_df is not None:
+            gl = ledger_df[(ledger_df.group == group_label) & (~ledger_df.pre_pipeline_excluded)]
+            mfd = gl['mean_fd_univariate'].dropna()
+            if len(mfd) > 0:
+                row['mean FD (univariate), mean (SD)'] = f'{mfd.mean():.2f}mm ({mfd.std():.2f})'
+            row['N with all 5 SNR contrasts'] = int((gl.n_snr_contrasts == len(CONTRAST_LIST)).sum())
+            row['N RSA-eligible'] = int((gl.rsa_status == 'RSA-eligible').sum())
+        rows.append(row)
+    return pd.DataFrame(rows)
+
+
+def make_rsa_hits_table(df, kind):
+    """Full table of FDR-significant ROI x model hits, sorted by p_fdr -- not just the single
+    strongest hit quoted in prose. `kind` is 'within' (within_group df, has a `group` column) or
+    'between' (group_comparison df).
+    """
+    if df is None:
+        return None
+    sig = df[df.p_fdr < 0.05].copy()
+    if len(sig) == 0:
+        return pd.DataFrame(columns=['ROI', 'model'] + (['group'] if kind == 'within' else ['observed_diff']) + ['p_fdr'])
+    sig = sig.sort_values('p_fdr')
+    sig['p_fdr'] = sig['p_fdr'].map(lambda x: f'{x:.4f}')
+    cols = ['ROI', 'model']
+    if kind == 'within':
+        cols += ['group']
+    else:
+        if 'observed_diff' in sig.columns:
+            sig['observed_diff'] = sig['observed_diff'].map(lambda x: f'{x:.3f}')
+            cols += ['observed_diff']
+    cols += ['p_fdr']
+    return sig[[c for c in cols if c in sig.columns]].reset_index(drop=True)
+
+
+def make_noise_ceiling_summary(noise_ceiling_df):
+    if noise_ceiling_df is None or len(noise_ceiling_df) == 0:
+        return None
+    return noise_ceiling_df.groupby('group')[['ceiling_lower', 'ceiling_upper']].mean().reset_index().round(3)
+
+
+def make_pre_pipeline_table(ledger_df):
+    if ledger_df is None:
+        return None
+    df = ledger_df[ledger_df.pre_pipeline_excluded][['participant_id', 'group', 'pre_pipeline_reason']]
+    df = df.rename(columns={'pre_pipeline_reason': 'reason'})
+    return df.sort_values('participant_id').reset_index(drop=True)
+
+
+def make_univariate_incomplete_table(ledger_df):
+    if ledger_df is None:
+        return None
+    df = ledger_df[(~ledger_df.pre_pipeline_excluded) & (ledger_df.univariate_status != 'complete')]
+    df = df[['participant_id', 'group', 'n_snr_contrasts', 'mean_fd_univariate', 'univariate_status', 'univariate_reason']]
+    df = df.rename(columns={'n_snr_contrasts': 'contrasts found', 'mean_fd_univariate': 'mean FD',
+                           'univariate_status': 'status', 'univariate_reason': 'reason'})
+    df['mean FD'] = df['mean FD'].map(lambda x: f'{x:.2f}mm' if pd.notna(x) else '—')
+    return df.sort_values(['status', 'participant_id']).reset_index(drop=True)
+
+
+def make_rsa_ineligible_table(ledger_df):
+    if ledger_df is None:
+        return None
+    df = ledger_df[(~ledger_df.pre_pipeline_excluded) & (ledger_df.rsa_status != 'RSA-eligible')]
+    df = df[['participant_id', 'group', 'n_badaga_runs_raw', 'n_runs_used_glmsingle', 'rsa_status', 'rsa_reason']]
+    df = df.rename(columns={'n_badaga_runs_raw': 'badaga runs on disk', 'n_runs_used_glmsingle': 'runs used by GLMsingle',
+                           'rsa_status': 'status', 'rsa_reason': 'reason'})
+    return df.sort_values(['status', 'participant_id']).reset_index(drop=True)
 
 
 # ── text summaries ───────────────────────────────────────────────────────────────
@@ -266,87 +602,58 @@ def summarize_whole_brain(label, finite_contrasts, empty_contrasts):
 
 # ── HTML assembly ──────────────────────────────────────────────────────────────
 CSS = '''
-* { box-sizing: border-box; }
-:root {
-  --bg: #F5F6F9; --surface: #FFFFFF; --surface-alt: #EEF0F4;
-  --ink: #161B22; --ink-muted: #5C6570; --border: #E2E5EA;
-  --accent: #9C7A1B; --cwns: #009E73; --cws: #CC79A7; --hemi-l: #0072B2; --hemi-r: #D55E00;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #12151C; --surface: #1B212B; --surface-alt: #222836;
-    --ink: #E8EAED; --ink-muted: #97A0AC; --border: #2B323D;
-    --accent: #C9A13A; --cwns: #1FA37D; --cws: #C0759E; --hemi-l: #4A8FCF; --hemi-r: #D97640;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #12151C; --surface: #1B212B; --surface-alt: #222836;
-  --ink: #E8EAED; --ink-muted: #97A0AC; --border: #2B323D;
-  --accent: #C9A13A; --cwns: #1FA37D; --cws: #C0759E; --hemi-l: #4A8FCF; --hemi-r: #D97640;
-}
-:root[data-theme="light"] {
-  --bg: #F5F6F9; --surface: #FFFFFF; --surface-alt: #EEF0F4;
-  --ink: #161B22; --ink-muted: #5C6570; --border: #E2E5EA;
-  --accent: #9C7A1B; --cwns: #009E73; --cws: #CC79A7; --hemi-l: #0072B2; --hemi-r: #D55E00;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  font-size: 16px; line-height: 1.65; color: var(--ink); background: var(--bg);
-  max-width: 920px; margin: 0 auto; padding: 3rem 1.5rem 5rem;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: 15px; line-height: 1.6; color: #222; background: #fff;
+  max-width: 1000px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem;
 }
-h1, h2, h3 { font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
-  text-wrap: balance; color: var(--ink); }
-h1 { font-size: 2.4rem; margin-bottom: 0.3rem; }
-h2 { font-size: 1.5rem; margin: 3rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--border); }
-h3 { font-size: 1.15rem; margin: 1.8rem 0 0.7rem; color: var(--ink-muted); }
-p { margin-bottom: 0.9rem; max-width: 68ch; }
-.eyebrow { text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.75rem;
-  color: var(--ink-muted); font-weight: 600; }
-.dek { color: var(--ink-muted); font-size: 1.1rem; margin-bottom: 1.5rem; max-width: 60ch; }
-.meta { color: var(--ink-muted); font-size: 0.85rem; margin-bottom: 2rem; }
-code { font-family: ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
-  background: var(--surface-alt); padding: 0.1em 0.35em; border-radius: 3px; font-size: 0.9em; }
+h1 { font-size: 1.9rem; margin-bottom: 0.3rem; color: #1a1a1a; }
+h2 { font-size: 1.35rem; margin: 2.4rem 0 0.9rem; border-bottom: 2px solid #ddd; padding-bottom: 5px; color: #222; }
+h3 { font-size: 1.05rem; margin: 1.5rem 0 0.5rem; color: #444; }
+p { margin-bottom: 0.85rem; max-width: 72ch; }
+.dek { color: #555; font-size: 1.05rem; margin-bottom: 1rem; max-width: 68ch; }
+.meta { color: #888; font-size: 0.85rem; margin-bottom: 1.8rem; }
+code { font-family: ui-monospace, "SF Mono", "Roboto Mono", Consolas, monospace;
+  background: #f0f0f0; padding: 0.1em 0.35em; border-radius: 3px; font-size: 0.9em; }
 
-.stat-row { display: flex; flex-wrap: wrap; gap: 1rem; margin: 1.5rem 0 2.5rem; }
-.stat-tile { background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
-  padding: 0.9rem 1.2rem; flex: 1 1 150px; }
-.stat-tile .n { font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace;
-  font-variant-numeric: tabular-nums; font-size: 1.7rem; font-weight: 600; display: block; }
-.stat-tile .label { font-size: 0.8rem; color: var(--ink-muted); }
+.stat-row { display: flex; flex-wrap: wrap; gap: 0.9rem; margin: 1.2rem 0 2rem; }
+.stat-tile { background: #f7f7f7; border: 1px solid #ddd; border-radius: 4px;
+  padding: 0.7rem 1.05rem; flex: 1 1 140px; }
+.stat-tile .n { font-family: ui-monospace, "SF Mono", "Roboto Mono", monospace;
+  font-variant-numeric: tabular-nums; font-size: 1.5rem; font-weight: 700; display: block; }
+.stat-tile .label { font-size: 0.76rem; color: #666; }
 
 figure { margin: 1rem 0 1.5rem; }
-figcaption { font-size: 0.85rem; color: var(--ink-muted); margin-top: 0.4rem; font-style: italic; }
-.missing { color: var(--ink-muted); font-style: italic; font-size: 0.9rem; }
+figcaption { font-size: 0.83rem; color: #666; margin-top: 0.35rem; font-style: italic; }
+.missing { color: #a00; font-style: italic; font-size: 0.9rem; }
 
-.finding-card { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--accent);
-  border-radius: 0 8px 8px 0; padding: 1.1rem 1.4rem; margin: 1rem 0 1.8rem; }
-.finding-card .eyebrow { color: var(--accent); }
-.finding-card p:last-child { margin-bottom: 0; }
+.summary { background: #f0f4f8; border-left: 4px solid #4477AA; padding: 0.85rem 1.1rem;
+  margin: 0.7rem 0 1.6rem; border-radius: 0 4px 4px 0; font-size: 0.92rem; line-height: 1.7; }
+.summary b { color: #222; }
+.summary.headline { border-left-color: #9C7A1B; background: #faf6ea; }
+.summary.motion { border-left-color: #D55E00; background: #fdf2ea; }
 
-.group-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
-  padding: 1.2rem 1.5rem; margin: 1rem 0 2rem; }
-.group-card.cwns { border-top: 3px solid var(--cwns); }
-.group-card.cws { border-top: 3px solid var(--cws); }
+.group-block { border: 1px solid #ddd; border-radius: 4px; padding: 1.1rem 1.4rem; margin: 1rem 0 2rem; }
+.group-block.cwns { border-top: 3px solid #009E73; }
+.group-block.cws { border-top: 3px solid #CC79A7; }
 
-.table-wrap { overflow-x: auto; margin: 1rem 0 1.5rem; }
-table.data-table { border-collapse: collapse; width: 100%; font-size: 0.88rem;
+.table-wrap { overflow-x: auto; margin: 0.8rem 0 1.5rem; }
+table.data-table, table.anova-table { border-collapse: collapse; width: 100%; font-size: 0.86rem;
   font-variant-numeric: tabular-nums; }
-table.data-table th, table.data-table td { border-bottom: 1px solid var(--border);
-  padding: 0.4rem 0.7rem; text-align: left; }
-table.data-table th { color: var(--ink-muted); font-weight: 600; font-size: 0.8rem;
-  text-transform: uppercase; letter-spacing: 0.03em; }
-table.data-table tbody tr:hover { background: var(--surface-alt); }
+table.data-table th, table.data-table td, table.anova-table th, table.anova-table td {
+  border: 1px solid #ddd; padding: 5px 9px; text-align: left; }
+table.data-table th, table.anova-table th { background: #ececec; font-weight: 600; }
+table.data-table tbody tr:nth-child(even), table.anova-table tbody tr:nth-child(even) { background: #fafafa; }
 
-.tag { display: inline-block; font-size: 0.72rem; font-weight: 600; padding: 0.1em 0.55em;
-  border-radius: 999px; letter-spacing: 0.02em; }
-.tag.cwns { background: color-mix(in srgb, var(--cwns) 18%, transparent); color: var(--cwns); }
-.tag.cws { background: color-mix(in srgb, var(--cws) 18%, transparent); color: var(--cws); }
+.tag { display: inline-block; font-size: 0.74rem; font-weight: 600; padding: 0.08em 0.5em; border-radius: 3px; }
+.tag.cwns { background: #d7f0e6; color: #00694c; }
+.tag.cws { background: #f6dcea; color: #97396e; }
 
 ul.open-items { padding-left: 1.3rem; }
-ul.open-items li { margin-bottom: 0.6rem; }
+ul.open-items li { margin-bottom: 0.55rem; }
 
-footer { margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--border);
-  color: var(--ink-muted); font-size: 0.85rem; }
+footer { margin-top: 3.5rem; padding-top: 1.2rem; border-top: 1px solid #ddd; color: #888; font-size: 0.83rem; }
 '''
 
 
@@ -354,11 +661,16 @@ def _stat_tile(n, label):
     return f'<div class="stat-tile"><span class="n">{n}</span><span class="label">{label}</span></div>'
 
 
-def build_html(*, participants_df, roi_long_df,
-               attrition_b64, hit_count_b64,
+def build_html(*, participants_df, ledger_df,
+               attrition_b64, rsa_ineligibility_b64, hit_count_b64,
+               descriptive_table_html, pre_pipeline_table_html,
+               univariate_incomplete_table_html, rsa_ineligible_table_html,
+               n_motion_flagged_univariate, n_motion_dropped_rsa, n_single_run_rsa,
                cwns_roi_table_html, cws_roi_table_html,
                anova_results_df, cwns_wb_summary, cws_wb_summary, diff_wb_summary,
                between_roi_summary, rsa_finding_summary,
+               cwns_rsa_hits_html, cws_rsa_hits_html, between_rsa_hits_html,
+               noise_ceiling_table_html,
                n_enrolled_cwns, n_enrolled_cws, n_rsa_cwns, n_rsa_cws):
     today = date.today().isoformat()
 
@@ -378,11 +690,12 @@ def build_html(*, participants_df, roi_long_df,
 </head>
 <body>
 
-<div class="eyebrow">SSP &middot; Chandrasekaran Lab &middot; internal status report</div>
+<div>SSP &middot; Chandrasekaran Lab &middot; internal status report</div>
 <h1>Speech-in-noise fMRI: where the CWS/CWNS data stand</h1>
 <p class="dek">Univariate (whole-brain + ROI) and single-trial RSA results on the <code>badaga</code>
 speech-in-noise task, generated from the cached outputs of
-<code>univariate_fmri/group_level_all_ROI.ipynb</code> and
+<code>univariate_fmri/group_level_all_ROI.ipynb</code>,
+<code>univariate_fmri/univariate_group-level.ipynb</code>, and
 <code>multivariate_fmri/GLMsingle_rsa-group.ipynb</code>.</p>
 <div class="meta">Generated {today} &middot; not a live view -- rerun this script after the next cluster run to refresh.</div>
 
@@ -391,30 +704,51 @@ speech-in-noise task, generated from the cached outputs of
   {_stat_tile(n_enrolled_cws, 'CWS enrolled')}
   {_stat_tile(f'{n_rsa_cwns}/{n_enrolled_cwns}', 'CWNS RSA-eligible')}
   {_stat_tile(f'{n_rsa_cws}/{n_enrolled_cws}', 'CWS RSA-eligible')}
+  {_stat_tile(n_single_run_rsa, 'RSA-ineligible: single badaga run')}
+  {_stat_tile(n_motion_dropped_rsa, 'RSA-ineligible: motion dropped a run')}
 </div>
 
-<div class="finding-card">
-  <div class="eyebrow">Headline</div>
-  <p>Univariate group differences are consistently null -- whole-brain and ROI-level, every
-  contrast. The one place CWS and CWNS separate is in single-trial RSA: <b>R-SMGa's
-  representational geometry for pitch (F0)</b> differs between groups, and is itself
-  significantly represented within CWS alone -- the only finding that converges across two
-  independent tests.</p>
-</div>
+<h2>Where we're losing participants</h2>
+<p>Descriptive stats and pipeline completeness by group, built from the same per-subject files
+the pipeline already writes (<code>motion_qc.csv</code>, <code>glmsingle_info.json</code>) plus a
+raw BIDS listing of badaga runs on disk -- not estimated, read directly.</p>
+{descriptive_table_html}
 
-<h2>Sample &amp; attrition</h2>
-<p>Usable N drops at each stage of the pipeline, and drops faster for CWS than CWNS -- most
-sharply for RSA, which requires cross-run condition repeats (single-run subjects are excluded).</p>
-{_img_tag(attrition_b64, 'N subjects by pipeline stage, CWNS vs. CWS.', width='60%')}
+{_img_tag(attrition_b64, 'N subjects by pipeline stage, CWNS vs. CWS.', width='58%')}
+
+<h3>Excluded before the pipeline even runs</h3>
+<p>These subjects never reach first-level modeling; reasons below are recorded in
+<code>group_level_all_ROI.ipynb</code>'s <code>ignore_subs</code> list, not derived from files.</p>
+{pre_pipeline_table_html}
+
+<h3>Univariate: subjects with an incomplete SNR contrast set</h3>
+<p>Everyone else who enrolled, but doesn't have all 5 SNR-level first-level statmaps
+(<code>q</code>, <code>8</code>, <code>0</code>, <code>n2</code>, <code>n6</code>).
+{n_motion_flagged_univariate} of these look like a motion story (mean FD above the 0.9mm
+scrubbing threshold used by <code>univariate_first-level.py</code>) -- the rest have no
+first-level output at all yet, or failed for an unrecorded reason (check SLURM logs for those).</p>
+{univariate_incomplete_table_html}
+
+<h3>RSA: why isn't a subject crossnobis-eligible?</h3>
+<p>RSA/crossnobis needs a condition to repeat <em>across</em> runs, not just within one run --
+if it doesn't, GLMsingle silently falls back to a degraded TYPEB estimate that's never used for
+RSA. The chart below separates that from a run being dropped for excessive motion (which can
+also leave a subject with only 1 usable run), from subjects GLMsingle simply hasn't been run for
+yet.</p>
+{_img_tag(rsa_ineligibility_b64, 'RSA-ineligibility reasons by group.', width='80%')}
+{rsa_ineligible_table_html}
 
 <h2>CWNS: the well-powered core dataset</h2>
 <p>Given the sample-size gap (CWNS enrolled N={n_enrolled_cwns} vs. CWS N={n_enrolled_cws}, and
 {n_rsa_cwns} vs. {n_rsa_cws} for RSA), CWNS is where the pipeline currently has real power --
 worth keeping in mind if scope narrows toward a CWNS-only analysis.</p>
 
-<div class="group-card cwns">
+<div class="group-block cwns">
 <h3>Whole-brain</h3>
 <p>{cwns_wb_summary}</p>
+{_brain_row('CWNS group, quiet (Q) vs. baseline', 'q', 'cwns')}
+{_brain_row('CWNS group, Q &minus; N6 (hardest SNR contrast)', 'qMinusN6', 'cwns')}
+{_brain_row('CWNS group, all sound vs. baseline (localizer)', 'sound', 'cwns')}
 
 <h3>ROI (20 cortical ROIs x 5 SNR levels, FDR-corrected)</h3>
 {cwns_roi_table_html}
@@ -429,16 +763,20 @@ structure to work with.</p>
 represents syllable identity</b> (p<sub>FDR</sub> &lt; .001) -- a clean, expected result
 (classic phonological encoding in posterior superior temporal cortex), useful as a positive
 control that the single-trial pipeline is picking up real signal.</p>
+{cwns_rsa_hits_html}
 </div>
 
 <h2>CWS: exploratory comparison group</h2>
 <p>Smaller sample throughout, and it shows: fewer whole-brain contrasts reach significance,
-fewer ROI hits survive FDR, and the RSA hits that do survive (n=7) should be treated as
-provisional until checked against per-subject leverage.</p>
+fewer ROI hits survive FDR, and the RSA hits that do survive should be treated as provisional
+until checked against per-subject leverage.</p>
 
-<div class="group-card cws">
+<div class="group-block cws">
 <h3>Whole-brain</h3>
 <p>{cws_wb_summary}</p>
+{_brain_row('CWS group, quiet (Q) vs. baseline', 'q', 'cws')}
+{_brain_row('CWS group, Q &minus; N6 (hardest SNR contrast)', 'qMinusN6', 'cws')}
+{_brain_row('CWS group, all sound vs. baseline (localizer)', 'sound', 'cws')}
 
 <h3>ROI (20 cortical ROIs x 5 SNR levels, FDR-corrected)</h3>
 {cws_roi_table_html}
@@ -450,36 +788,44 @@ survive FDR correction. Read that as "there's something there, underpowered to l
 not "there's nothing there."</p>
 
 <h3>RSA</h3>
-<p>Three within-group findings survive FDR (of 120 tests, n=7 throughout): R-STGa and R-HG both
-represent speaker identity (opposite sign), and R-SMGa represents F0/acoustic pitch information
-(negative). With only 7 subjects, pull the per-subject values from
-<code>model_fit_scalars_noiselevel-{RSA_NOISE_LEVEL_TAG}.csv</code> before treating any of these
-as a stable group-level effect -- one or two subjects can drive a result at this sample size.</p>
+<p>With a small sample throughout, pull the per-subject values from
+<code>model_fit_scalars_noiselevel-{RSA_NOISE_LEVEL_TAG}.csv</code> before treating any hit
+below as a stable group-level effect -- one or two subjects can drive a result at this sample
+size.</p>
+{cws_rsa_hits_html}
 </div>
 
 <h2>Between-group comparison</h2>
 
 <h3>Whole-brain</h3>
 <p>{diff_wb_summary}</p>
+{_brain_row('CWS &minus; CWNS group difference, Q &minus; N6', 'qMinusN6', 'diff')}
 
 <h3>ROI</h3>
 <p>{between_roi_summary}</p>
 
 <h3>RSA -- the one standout result</h3>
-<div class="finding-card">
+<div class="summary headline">
 <p>{rsa_finding_summary}</p>
 </div>
+{between_rsa_hits_html}
+
+<h3>Noise ceiling (RSA model-fit context)</h3>
+<p>Mean upper/lower noise-ceiling bounds (Nili et al. 2014) across all 20 ROIs, per group -- the
+best model-fit correlation achievable given noise in the empirical RDMs alone, independent of
+any model. CWS's smaller N should widen this band relative to CWNS.</p>
+{noise_ceiling_table_html}
 
 <h2>ANOVA detail</h2>
 <div class="table-wrap">{anova_table_html}</div>
 
 <h2>Open items before publication</h2>
 <ul class="open-items">
-  <li><b>Missing first-level maps.</b> Several subjects are consistently absent across SNR
-  contrasts (e.g. sub-SSP034/051/062/077/081/092/097/111) -- confirm whether that's still-processing,
-  failed QC, or an intentional exclusion, since it's the single biggest lever on power.</li>
-  <li><b>RSA sample size for CWS (n=7).</b> Any within-group CWS RSA hit could be driven by 1-2
+  <li><b>RSA sample size for CWS.</b> Any within-group CWS RSA hit could be driven by 1-2
   subjects -- check per-subject values before reporting.</li>
+  <li><b>sub-SSP107</b> is excluded from <code>univariate_group-level.ipynb</code>'s
+  <code>ignore_subs</code> with no recorded reason, even though first-level GLMs ARE computed
+  for them -- confirm this exclusion is intentional before publication.</li>
   <li><b>README is stale</b> -- still describes the pre-GLMsingle searchlight RSA approach, no
   mention of acoustic RSA, noise ceiling, or FDR correction.</li>
   <li><b>Dead code</b> -- <code>multivariate_fmri/rsa_searchlight.py</code> and
@@ -493,9 +839,10 @@ as a stable group-level effect -- one or two subjects can drive a result at this
 </ul>
 
 <footer>
-Generated by <code>report/generate_report.py</code> from cached notebook outputs under
-<code>{GROUP_OUT_DIR}</code> and <code>{RSA_OUT_DIR}</code>. Figures are embedded PNGs already
-saved by the source notebooks, plus two summary charts built fresh from the cached CSVs. Rerun
+Generated by <code>report/generate_report.py</code> from cached notebook/script outputs under
+<code>{GROUP_OUT_DIR}</code>, <code>{WHOLE_BRAIN_DIR}</code>, <code>{L1_DIR}</code>,
+<code>{GLMSINGLE_DIR}</code>, and <code>{RSA_OUT_DIR}</code>. Figures are embedded PNGs already
+saved by the source notebooks, plus summary charts built fresh from the cached CSVs/JSON. Rerun
 after each cluster run to refresh.
 </footer>
 
@@ -515,14 +862,45 @@ def main():
     rsa_model_fit_df = load_rsa_model_fit()
     rsa_group_comparison_df = load_rsa_group_comparison()
     rsa_within_group_df = load_rsa_within_group()
+    rsa_noise_ceiling_df = load_rsa_noise_ceiling()
+
+    print('Building attrition ledger (per-subject motion_qc.csv / glmsingle_info.json / RDM presence)...')
+    ledger_df = build_attrition_ledger(participants_df)
 
     print('Building summary charts...')
     attrition_b64 = make_attrition_chart(participants_df, roi_long_df, rsa_model_fit_df)
+    rsa_ineligibility_b64 = make_rsa_ineligibility_chart(ledger_df)
     hit_count_b64 = make_roi_hit_count_chart(within_group_stats_df)
 
     print('Building ROI hit tables...')
     cwns_roi_table_html = _df_to_table_html(make_roi_direction_table(within_group_stats_df, 'CWNS'))
     cws_roi_table_html = _df_to_table_html(make_roi_direction_table(within_group_stats_df, 'CWS'))
+
+    print('Building attrition tables...')
+    descriptive_table_html = _df_to_table_html(make_descriptive_stats_table(participants_df, ledger_df))
+    pre_pipeline_table_html = _df_to_table_html(make_pre_pipeline_table(ledger_df))
+    univariate_incomplete_table_html = _df_to_table_html(make_univariate_incomplete_table(ledger_df))
+    rsa_ineligible_table_html = _df_to_table_html(make_rsa_ineligible_table(ledger_df))
+
+    n_motion_flagged_univariate = n_motion_dropped_rsa = n_single_run_rsa = 0
+    if ledger_df is not None:
+        n_motion_flagged_univariate = int((ledger_df.univariate_status == 'likely motion').sum())
+        n_motion_dropped_rsa = int((ledger_df.rsa_status == 'run dropped for motion').sum())
+        n_single_run_rsa = int((ledger_df.rsa_status == 'single run (file issue)').sum())
+
+    print('Building RSA hit tables...')
+    cwns_hits = None
+    cws_hits = None
+    between_hits = None
+    if rsa_within_group_df is not None:
+        cwns_hits = make_rsa_hits_table(rsa_within_group_df[rsa_within_group_df.group == 'CWNS'], 'within')
+        cws_hits = make_rsa_hits_table(rsa_within_group_df[rsa_within_group_df.group == 'CWS'], 'within')
+    if rsa_group_comparison_df is not None:
+        between_hits = make_rsa_hits_table(rsa_group_comparison_df, 'between')
+    cwns_rsa_hits_html = _df_to_table_html(cwns_hits)
+    cws_rsa_hits_html = _df_to_table_html(cws_hits)
+    between_rsa_hits_html = _df_to_table_html(between_hits)
+    noise_ceiling_table_html = _df_to_table_html(make_noise_ceiling_summary(rsa_noise_ceiling_df))
 
     # whole-brain summaries: hand-maintained from univariate_group-level.ipynb's saved output
     # (that notebook doesn't currently cache a machine-readable per-contrast threshold table --
@@ -575,12 +953,19 @@ def main():
 
     print('Assembling HTML...')
     html = build_html(
-        participants_df=participants_df, roi_long_df=roi_long_df,
-        attrition_b64=attrition_b64, hit_count_b64=hit_count_b64,
+        participants_df=participants_df, ledger_df=ledger_df,
+        attrition_b64=attrition_b64, rsa_ineligibility_b64=rsa_ineligibility_b64, hit_count_b64=hit_count_b64,
+        descriptive_table_html=descriptive_table_html, pre_pipeline_table_html=pre_pipeline_table_html,
+        univariate_incomplete_table_html=univariate_incomplete_table_html,
+        rsa_ineligible_table_html=rsa_ineligible_table_html,
+        n_motion_flagged_univariate=n_motion_flagged_univariate, n_motion_dropped_rsa=n_motion_dropped_rsa,
+        n_single_run_rsa=n_single_run_rsa,
         cwns_roi_table_html=cwns_roi_table_html, cws_roi_table_html=cws_roi_table_html,
         anova_results_df=anova_results_df,
         cwns_wb_summary=cwns_wb_summary, cws_wb_summary=cws_wb_summary, diff_wb_summary=diff_wb_summary,
         between_roi_summary=between_roi_summary, rsa_finding_summary=rsa_finding_summary,
+        cwns_rsa_hits_html=cwns_rsa_hits_html, cws_rsa_hits_html=cws_rsa_hits_html,
+        between_rsa_hits_html=between_rsa_hits_html, noise_ceiling_table_html=noise_ceiling_table_html,
         n_enrolled_cwns=n_enrolled_cwns, n_enrolled_cws=n_enrolled_cws,
         n_rsa_cwns=n_rsa_cwns, n_rsa_cws=n_rsa_cws,
     )

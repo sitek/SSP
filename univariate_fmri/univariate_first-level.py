@@ -2,6 +2,7 @@ import os
 import sys
 import argparse
 
+import numpy as np
 import pandas as pd
 
 from nilearn.glm.first_level import first_level_from_bids
@@ -111,6 +112,26 @@ def update_events(models_events, event_type='sound'):
                           "(only 'snr' and 'sound' are supported)")
 
     return stim_list, models_events
+
+
+def two_term_diff_contrast(model, positive_label, negative_label):
+    """Explicit 'positive_label minus negative_label' contrast vector, built per run directly
+    from model.design_matrices_' column positions -- bypasses nilearn's string-formula parser
+    (pandas.DataFrame.eval), which can never reference a design matrix column literally named
+    with a bare numeral (e.g. '0') as an identifier: a bare '0' always parses as the numeric
+    literal zero, so e.g. the string 'Q - 0' would silently evaluate to just 'Q' (subtracting
+    zero is a no-op) instead of "Q minus the 0 dB SNR condition". Needed for any two-term
+    contrast where either condition label could be misread as a number (currently 'Q - 0'; add
+    a call here for any future contrast with the same shape, e.g. '8 - 0').
+    """
+    contrast_def = []
+    for dm in model.design_matrices_:
+        cols = list(dm.columns)
+        vec = np.zeros(len(cols))
+        vec[cols.index(positive_label)] = 1
+        vec[cols.index(negative_label)] = -1
+        contrast_def.append(vec)
+    return contrast_def
 
 
 # Across-runs GLM
@@ -234,7 +255,11 @@ def nilearn_glm_across_runs(stim_list, task_label,
 
         # compute the contrast of interest
         print('computing contrast of interest')
-        summary_statistics = model.compute_contrast(contrast_label, output_type='all')
+        if contrast_label == 'Q - 0':
+            contrast_def = two_term_diff_contrast(model, 'Q', '0')
+        else:
+            contrast_def = contrast_label
+        summary_statistics = model.compute_contrast(contrast_def, output_type='all')
 
         # save model outputs
         # NOTE: `--fwhm` is parsed as float (e.g. 6 -> 6.0), but univariate_group-level.ipynb's
