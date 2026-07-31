@@ -85,28 +85,46 @@ HEMI_COLOR = {'L': '#0072B2', 'R': '#D55E00'}
 ACCENT = '#9C7A1B'
 MOTION_COLOR = '#D55E00'
 
-# subjects dropped before the pipeline even runs -- mirrors group_level_all_ROI.ipynb's
-# `ignore_subs` list (cell 9) and its inline comments. Keep in sync if that list changes; this
-# is genuinely institutional knowledge (why sub-SSP102 is out) that isn't recoverable from cached
-# files alone, so it's hardcoded rather than derived.
-IGNORE_SUBS_REASONS = {
-    'sub-SSP001': 'excluded pre-pipeline (no reason recorded in group_level_all_ROI.ipynb)',
-    'sub-SSP002': 'excluded pre-pipeline (no reason recorded in group_level_all_ROI.ipynb)',
-    'sub-SSP005': 'excluded pre-pipeline (no reason recorded in group_level_all_ROI.ipynb)',
-    'sub-SSP012': 'excluded pre-pipeline (no reason recorded in group_level_all_ROI.ipynb)',
-    'sub-SSP014': 'excluded pre-pipeline (no reason recorded in group_level_all_ROI.ipynb)',
-    'sub-SSP069': 'excluded pre-pipeline (no reason recorded in group_level_all_ROI.ipynb)',
-    'sub-SSP072': 'excluded pre-pipeline (no reason recorded in group_level_all_ROI.ipynb)',
-    'sub-SSP076': 'missing MRI files',
-    'sub-SSP102': 'participant left the scanner after a few minutes',
-    'sub-SSP098': 'still processing as of the last group-level run',
-    'sub-SSP105': 'still processing as of the last group-level run',
-    'sub-SSP106': ('still processing as of the last group-level run -- also only has 1 badaga run '
-                  'on disk, so would be RSA-ineligible (TYPEB, not TYPED) regardless'),
-    'sub-SSP107': ('still processing as of the last group-level run -- flagged in '
-                  'univariate_group-level.ipynb as excluded with no recorded reason even though '
-                  'first-level GLMs ARE computed; confirm before publication'),
-}
+# Subjects dropped before the pipeline even runs. As of 2026-07-31 both group-level notebooks'
+# `ignore_subs` lists are EMPTY -- group_level_all_ROI.ipynb (ROI + RSA eligibility below) and
+# univariate_group-level.ipynb (whole-brain design matrix, cov_design_df) previously hardcoded
+# different subject sets (sub-SSP058 was excluded from whole-brain only, with no reason recorded
+# anywhere -- confirmed to have full badaga data and re-included; the rest -- 001/002/005/012/
+# 014/069/072/076/102/098/105 -- were confirmed to lack enough badaga task data on disk to
+# produce first-level derivatives regardless, so build_statmap_dict/mask_stat_maps
+# (group_level_all_ROI.ipynb) and prepare_group_inputs (univariate_group-level.ipynb) already
+# drop them gracefully via their own per-file/per-covariate checks). Kept as empty dicts (not
+# deleted) so a future one-off, data-quality-driven exclusion (something a file-existence check
+# structurally can't catch, e.g. a participant who left early but still has some real-but-bad
+# data on disk) has somewhere to go in both this ledger and the source notebooks -- update
+# alongside the notebooks' own `ignore_subs` cells if that ever happens.
+IGNORE_SUBS_ROI_RSA = {}
+
+IGNORE_SUBS_WHOLE_BRAIN = {}
+
+# kept for the ledger's single "pre-pipeline excluded" bucket used by the univariate/RSA
+# columns below (ROI/RSA is the more complete of the two lists); the whole-brain-specific
+# exclusions are tracked separately via IGNORE_SUBS_WHOLE_BRAIN and _pipeline_exclusion_mismatches().
+IGNORE_SUBS_REASONS = IGNORE_SUBS_ROI_RSA
+
+
+def _pipeline_exclusion_mismatches():
+    """Subjects excluded from one group-level notebook's ignore_subs but not the other's --
+    exactly the kind of silent split that's easy to miss when only one list is checked.
+    """
+    all_subs = set(IGNORE_SUBS_ROI_RSA) | set(IGNORE_SUBS_WHOLE_BRAIN)
+    rows = []
+    for sub_id in sorted(all_subs):
+        in_roi_rsa = sub_id in IGNORE_SUBS_ROI_RSA
+        in_whole_brain = sub_id in IGNORE_SUBS_WHOLE_BRAIN
+        if in_roi_rsa != in_whole_brain:
+            rows.append({
+                'participant_id': sub_id,
+                'excluded from ROI/RSA': 'yes' if in_roi_rsa else 'no',
+                'excluded from whole-brain': 'yes' if in_whole_brain else 'no',
+                'reason': IGNORE_SUBS_ROI_RSA.get(sub_id) or IGNORE_SUBS_WHOLE_BRAIN.get(sub_id),
+            })
+    return pd.DataFrame(rows)
 
 
 # ── small helpers ──────────────────────────────────────────────────────────────
@@ -124,6 +142,34 @@ def img_from_file(path):
         print(f'  [missing] {path}')
         return None
     return 'data:image/png;base64,' + base64.b64encode(path.read_bytes()).decode()
+
+
+def img_from_file_resized(path, max_width_px=1600, dpi=150):
+    """Like img_from_file, but downsamples large source PNGs before embedding. The whole-brain
+    mosaic PNGs this report embeds are saved by univariate_group-level.ipynb's
+    plot_mosaic_with_contours at dpi=1000 (12700x5000px each) -- far more resolution than a
+    browser displays useful pixels for, and embedding 7-9 of them raw was ballooning the report
+    to 15+ MB. Re-rendered through matplotlib at a screen-appropriate width instead.
+    """
+    path = Path(path)
+    if not path.exists():
+        print(f'  [missing] {path}')
+        return None
+    img_arr = plt.imread(path)
+    h, w = img_arr.shape[:2]
+    if w <= max_width_px:
+        return img_from_file(path)
+    fig_w_in = max_width_px / dpi
+    fig_h_in = fig_w_in * (h / w)
+    fig = plt.figure(figsize=(fig_w_in, fig_h_in), dpi=dpi)
+    ax = fig.add_axes([0, 0, 1, 1])
+    ax.imshow(img_arr)
+    ax.axis('off')
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png', dpi=dpi)
+    plt.close(fig)
+    buf.seek(0)
+    return 'data:image/png;base64,' + base64.b64encode(buf.read()).decode()
 
 
 def read_csv_safe(path, **kwargs):
@@ -155,7 +201,7 @@ def _img_tag(b64, caption='', width='100%'):
     return f'<figure><img src="{b64}" style="width:{width};max-width:100%;">{cap}</figure>'
 
 def _brain_row(caption_prefix, contrast, group_tag):
-    b64 = img_from_file(WHOLE_BRAIN_DIR / f'group-{group_tag}_contrast-{contrast}_view-mosaic.png')
+    b64 = img_from_file_resized(WHOLE_BRAIN_DIR / f'group-{group_tag}_contrast-{contrast}_view-mosaic.png')
     return _img_tag(b64, f'{caption_prefix} -- contrast-{contrast}, FDR cluster-corrected.', width='100%')
 
 
@@ -353,45 +399,53 @@ def build_attrition_ledger(participants_df):
 
 
 # ── charts built fresh from cached CSVs / the attrition ledger ─────────────────
+# ordered (not qualitative) palette for pipeline stages -- Enrolled -> ROI -> RSA is a real
+# funnel, each stage a strict subset of the previous, so a light-to-dark ramp reads as
+# "progressively further along," distinct from the CWNS/CWS group colors used everywhere else
+# in this report.
+STAGE_COLORS = ['#9ECAE1', '#4292C6', '#08519C']
+
+
 def make_attrition_chart(participants_df, roi_long_df, rsa_model_fit_df):
-    """Grouped bar chart: N subjects by pipeline stage, CWNS vs CWS. A genuine funnel (each
-    stage is a strict subset of the previous), so bars are ordered stage-by-stage rather than
-    alphabetically.
+    """Grouped bar chart: N subjects per group (CWNS, CWS), with one bar per pipeline stage --
+    grouped by pipeline stage (not by group), so each group's stage-by-stage drop-off reads as
+    three adjacent, progressively shorter bars in one place, rather than being split across
+    separate per-stage x-tick clusters.
     """
     stages = []
     if participants_df is not None:
         counts = participants_df.group_norm.value_counts()
-        stages.append(('Enrolled\n(participants.tsv)', counts.get('control', 0), counts.get('cws', 0)))
+        stages.append(('Enrolled', counts.get('control', 0), counts.get('cws', 0)))
     if roi_long_df is not None:
         n = roi_long_df.drop_duplicates('participant_id')[['participant_id', 'group']]
         counts = n.group.value_counts()
-        stages.append(('ROI univariate\n(any usable contrast)', counts.get('CWNS', 0), counts.get('CWS', 0)))
+        stages.append(('ROI univariate', counts.get('CWNS', 0), counts.get('CWS', 0)))
     if rsa_model_fit_df is not None:
         n = rsa_model_fit_df.drop_duplicates('subject_id')[['subject_id', 'group']]
         counts = n.group.value_counts()
-        stages.append(('RSA (GLMsingle,\ncross-run repeats)', counts.get('CWNS', 0), counts.get('CWS', 0)))
+        stages.append(('RSA (cross-run\nrepeats)', counts.get('CWNS', 0), counts.get('CWS', 0)))
 
     if not stages:
         return None
 
-    labels = [s[0] for s in stages]
-    cwns_n = [s[1] for s in stages]
-    cws_n = [s[2] for s in stages]
-    x = np.arange(len(labels))
-    width = 0.32
+    groups = ['CWNS', 'CWS']
+    x = np.arange(len(groups))
+    n_stages = len(stages)
+    width = 0.8 / n_stages
 
-    fig, ax = plt.subplots(1, 1, figsize=(6, 4), dpi=150)
-    ax.bar(x - width / 2, cwns_n, width, label='CWNS', color=GROUP_COLOR['CWNS'])
-    ax.bar(x + width / 2, cws_n, width, label='CWS', color=GROUP_COLOR['CWS'])
-    for xi, n in zip(x - width / 2, cwns_n):
-        ax.text(xi, n + 0.5, str(int(n)), ha='center', va='bottom', fontsize=9)
-    for xi, n in zip(x + width / 2, cws_n):
-        ax.text(xi, n + 0.5, str(int(n)), ha='center', va='bottom', fontsize=9)
+    fig, ax = plt.subplots(1, 1, figsize=(5.5, 4.5), dpi=150)
+    for i, (stage_label, cwns_n, cws_n) in enumerate(stages):
+        offset = (i - (n_stages - 1) / 2) * width
+        vals = [cwns_n, cws_n]
+        xi_positions = x + offset
+        ax.bar(xi_positions, vals, width, label=stage_label, color=STAGE_COLORS[i % len(STAGE_COLORS)])
+        for xi, n in zip(xi_positions, vals):
+            ax.text(xi, n + 0.5, str(int(n)), ha='center', va='bottom', fontsize=8)
     ax.set_xticks(x)
-    ax.set_xticklabels(labels, fontsize=9)
+    ax.set_xticklabels(groups, fontsize=10)
     ax.set_ylabel('N subjects')
-    ax.set_title('Sample size by pipeline stage')
-    ax.legend(frameon=False)
+    ax.set_title('Sample size by group, across pipeline stages')
+    ax.legend(frameon=False, fontsize=8)
     ax.spines[['top', 'right']].set_visible(False)
     fig.tight_layout()
     return fig_to_b64(fig)
@@ -663,7 +717,7 @@ def _stat_tile(n, label):
 
 def build_html(*, participants_df, ledger_df,
                attrition_b64, rsa_ineligibility_b64, hit_count_b64,
-               descriptive_table_html, pre_pipeline_table_html,
+               descriptive_table_html, pre_pipeline_table_html, mismatch_table_html,
                univariate_incomplete_table_html, rsa_ineligible_table_html,
                n_motion_flagged_univariate, n_motion_dropped_rsa, n_single_run_rsa,
                cwns_roi_table_html, cws_roi_table_html,
@@ -714,12 +768,23 @@ the pipeline already writes (<code>motion_qc.csv</code>, <code>glmsingle_info.js
 raw BIDS listing of badaga runs on disk -- not estimated, read directly.</p>
 {descriptive_table_html}
 
-{_img_tag(attrition_b64, 'N subjects by pipeline stage, CWNS vs. CWS.', width='58%')}
+{_img_tag(attrition_b64, 'N subjects per group, one bar per pipeline stage.', width='55%')}
 
 <h3>Excluded before the pipeline even runs</h3>
 <p>These subjects never reach first-level modeling; reasons below are recorded in
 <code>group_level_all_ROI.ipynb</code>'s <code>ignore_subs</code> list, not derived from files.</p>
 {pre_pipeline_table_html}
+
+<h3>Pinch point: the two group-level notebooks don't agree on who's excluded</h3>
+<p><code>group_level_all_ROI.ipynb</code> (ROI + RSA eligibility above) and
+<code>univariate_group-level.ipynb</code> (whole-brain design matrix, <code>cov_design_df</code>)
+each hardcode their own <code>ignore_subs</code> list, and the two lists have drifted apart --
+a subject can be pre-pipeline-excluded from one analysis and not the other, silently, with no
+warning anywhere in either notebook. This is exactly the kind of gap that makes a raw folder
+count under <code>run-all_contrast-snr/</code> not directly comparable to
+<code>cov_design_df.CWNS.sum()</code>: the two numbers are filtered by different lists before
+you even get to per-contrast/per-covariate dropping.</p>
+{mismatch_table_html}
 
 <h3>Univariate: subjects with an incomplete SNR contrast set</h3>
 <p>Everyone else who enrolled, but doesn't have all 5 SNR-level first-level statmaps
@@ -879,6 +944,7 @@ def main():
     print('Building attrition tables...')
     descriptive_table_html = _df_to_table_html(make_descriptive_stats_table(participants_df, ledger_df))
     pre_pipeline_table_html = _df_to_table_html(make_pre_pipeline_table(ledger_df))
+    mismatch_table_html = _df_to_table_html(_pipeline_exclusion_mismatches())
     univariate_incomplete_table_html = _df_to_table_html(make_univariate_incomplete_table(ledger_df))
     rsa_ineligible_table_html = _df_to_table_html(make_rsa_ineligible_table(ledger_df))
 
@@ -956,6 +1022,7 @@ def main():
         participants_df=participants_df, ledger_df=ledger_df,
         attrition_b64=attrition_b64, rsa_ineligibility_b64=rsa_ineligibility_b64, hit_count_b64=hit_count_b64,
         descriptive_table_html=descriptive_table_html, pre_pipeline_table_html=pre_pipeline_table_html,
+        mismatch_table_html=mismatch_table_html,
         univariate_incomplete_table_html=univariate_incomplete_table_html,
         rsa_ineligible_table_html=rsa_ineligible_table_html,
         n_motion_flagged_univariate=n_motion_flagged_univariate, n_motion_dropped_rsa=n_motion_dropped_rsa,
