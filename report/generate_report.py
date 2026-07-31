@@ -690,8 +690,8 @@ def build_html(*, participants_df, ledger_df,
 </head>
 <body>
 
-<div>SSP &middot; Chandrasekaran Lab &middot; internal status report</div>
-<h1>Speech-in-noise fMRI: where the CWS/CWNS data stand</h1>
+<div>SSP &middot; Kevin Sitek &middot; internal status report</div>
+<h1>Speech-in-noise fMRI: CWS/CWNS data</h1>
 <p class="dek">Univariate (whole-brain + ROI) and single-trial RSA results on the <code>badaga</code>
 speech-in-noise task, generated from the cached outputs of
 <code>univariate_fmri/group_level_all_ROI.ipynb</code>,
