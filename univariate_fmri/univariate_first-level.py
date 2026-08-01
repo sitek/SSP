@@ -287,6 +287,45 @@ def nilearn_glm_across_runs(stim_list, task_label,
     return summary_statistics
 
 
+def drop_empty_event_runs(imgs, events, confounds, subject_label):
+    """Drop any run with no 'sound' trials in its events.tsv (e.g. a run started then aborted
+    almost immediately) BEFORE update_events() tries to build trial types from it -- otherwise
+    one empty/malformed run crashes the whole subject (a raw KeyError deep in pandas) instead of
+    just being excluded, the same way nilearn_glm_across_runs() below already drops a run for
+    excessive motion. Operates on imgs/events/confounds together so the three per-run parallel
+    lists never drift out of sync with each other.
+
+    Real case that motivated this: sub-SSP001 has 3 badaga runs on disk: run-02's events.tsv has
+    no usable trials (empty/aborted run), while run-01 and run-03 are fine -- this should drop
+    just run-02 and proceed with the other two, not fail the whole subject.
+    """
+    # first_level_from_bids returns bare, non-list values for a subject with exactly one run,
+    # instead of a length-1 list -- same normalization already needed in nilearn_glm_across_runs().
+    if not isinstance(imgs, list):
+        imgs, events, confounds = [imgs], [events], [confounds]
+
+    keep_runs = []
+    for rx, run_events in enumerate(events):
+        has_sound_trials = ('trial_type' in run_events.columns
+                            and (run_events['trial_type'] == 'sound').any())
+        if not has_sound_trials:
+            print(f'WARNING: run {rx + 1} for sub-{subject_label} has no "sound" trials in its '
+                 'events.tsv (empty/aborted run?) -- dropping this run.')
+        else:
+            keep_runs.append(rx)
+
+    if len(keep_runs) == 0:
+        raise RuntimeError(
+            f'All {len(imgs)} run(s) for sub-{subject_label} have no usable badaga events -- '
+            'no usable data for this subject.'
+        )
+    if len(keep_runs) < len(imgs):
+        imgs = [imgs[rx] for rx in keep_runs]
+        events = [events[rx] for rx in keep_runs]
+        confounds = [confounds[rx] for rx in keep_runs]
+    return imgs, events, confounds
+
+
 ''' Run the modeling pipeline '''
 models, models_run_imgs, \
         raw_models_events, \
@@ -298,6 +337,10 @@ models, models_run_imgs, \
                                                  derivatives_folder=fmriprep_dir,
                                                  slice_time_ref=None,  # infer from BIDS metadata, see note above
                                                  minimize_memory=False)
+
+midx = 0  # only 1 subject per analysis
+models_run_imgs[midx], raw_models_events[midx], models_confounds[midx] = drop_empty_event_runs(
+    models_run_imgs[midx], raw_models_events[midx], models_confounds[midx], subject_id)
 
 stim_list, models_events = update_events(raw_models_events,
                                          event_type=event_type)
