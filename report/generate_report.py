@@ -421,7 +421,7 @@ def make_attrition_chart(participants_df, roi_long_df, rsa_model_fit_df):
         counts = n.group.value_counts()
         stages.append(('ROI univariate', counts.get('CWNS', 0), counts.get('CWS', 0)))
     if rsa_model_fit_df is not None:
-        n = rsa_model_fit_df.drop_duplicates('subject_id')[['subject_id', 'group']]
+        n = rsa_model_fit_df.drop_duplicates('participant_id')[['participant_id', 'group']]
         counts = n.group.value_counts()
         stages.append(('RSA (cross-run\nrepeats)', counts.get('CWNS', 0), counts.get('CWS', 0)))
 
@@ -1012,9 +1012,9 @@ def main():
 
     n_enrolled_cwns = int((participants_df.group_norm == 'control').sum()) if participants_df is not None else '—'
     n_enrolled_cws = int((participants_df.group_norm == 'cws').sum()) if participants_df is not None else '—'
-    n_rsa_cwns = rsa_model_fit_df.drop_duplicates('subject_id').query("group == 'CWNS'").shape[0] \
+    n_rsa_cwns = rsa_model_fit_df.drop_duplicates('participant_id').query("group == 'CWNS'").shape[0] \
         if rsa_model_fit_df is not None else '—'
-    n_rsa_cws = rsa_model_fit_df.drop_duplicates('subject_id').query("group == 'CWS'").shape[0] \
+    n_rsa_cws = rsa_model_fit_df.drop_duplicates('participant_id').query("group == 'CWS'").shape[0] \
         if rsa_model_fit_df is not None else '—'
 
     print('Assembling HTML...')
