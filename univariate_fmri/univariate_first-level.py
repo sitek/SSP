@@ -93,6 +93,16 @@ def update_events(models_events, event_type='sound'):
     if event_type == 'snr':
         for sx, sub_events in enumerate(models_events):
             for mx, run_events in enumerate(sub_events):
+                if 'noise_level' not in run_events.columns:
+                    raise KeyError(
+                        f"Run {mx + 1}'s events.tsv has no 'noise_level' column (columns present: "
+                        f"{list(run_events.columns)}). event_type='snr' can't build SNR-level "
+                        "trial types without it. This is usually NOT a transient/fixable failure --"
+                        " it means this subject's events.tsv predates the current badaga "
+                        "SNR-condition design (e.g. an early pilot subject run under a different "
+                        "protocol), not that data is merely missing. Check this run's events.tsv "
+                        "columns directly before assuming a rerun will help."
+                    )
                 run_events['trial_type'] = run_events['noise_level']
 
         # create stimulus list from updated events.tsv file

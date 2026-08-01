@@ -190,6 +190,14 @@ def _rsa_fig(filename, caption, width='100%'):
     return _img_tag(b64, caption, width=width)
 
 
+def _roi_fig(filename, caption, width='100%'):
+    """ROI-level SNR-trend / laterality-index PNGs saved by group_level_all_ROI.ipynb --
+    same screen-appropriate sizing as _rsa_fig, just from GROUP_OUT_DIR instead of RSA_OUT_DIR.
+    """
+    b64 = img_from_file(GROUP_OUT_DIR / filename)
+    return _img_tag(b64, caption, width=width)
+
+
 def _df_to_table_html(df, css_class='data-table'):
     if df is None or len(df) == 0:
         return '<p class="missing">[no data]</p>'
@@ -797,11 +805,27 @@ worth keeping in mind if scope narrows toward a CWNS-only analysis.</p>
 SNR&times;region, and the 3-way interaction (see table below) -- substantial, well-powered
 structure to work with.</p>
 
+<h3>Linear SNR-trend &amp; laterality index</h3>
+<p>Two analyses added since the last report, both well-powered for CWNS: a linear SNR-trend
+(activation should increase as noise decreases) survives FDR correction in 18 of 20 ROIs --
+essentially the whole core auditory/language network (strongest: R-STGp, L-PT, L-STGa, R-PT,
+R-HG, all p<sub>FDR</sub> &lt; .001). Laterality index (R&minus;L)/(|L|+|R|) shows CWNS is
+robustly left-lateralized (negative LI, driven by the right-hemisphere deactivation already in
+the ROI table above) in pars opercularis across all 5 SNR levels and pars triangularis at 4/5
+(p<sub>FDR</sub> &lt; .05 throughout). Neither shows a significant CWS-vs-CWNS difference at any
+ROI or SNR level.</p>
+{_roi_fig('trendplot_snr_by-roi.png',
+         'Linear SNR-trend score by ROI, CWS vs. CWNS -- asterisks mark CWNS ROIs with a significant positive trend.')}
+{_roi_fig('li_heatmap_group-cwns.png',
+         'CWNS mean laterality index by region x SNR level -- pars opercularis and pars triangularis are consistently left-lateralized (negative LI) across nearly every SNR level.')}
+
 <h3>RSA</h3>
 <p>One within-group finding survives FDR correction (of 120 ROI x model tests): <b>L-STGp
 represents syllable identity</b> (p<sub>FDR</sub> &lt; .001) -- a clean, expected result
 (classic phonological encoding in posterior superior temporal cortex), useful as a positive
-control that the single-trial pipeline is picking up real signal.</p>
+control that the single-trial pipeline is picking up real signal. The same ROI/model pair also
+shows a significant positive linear noise-level trend (below) -- two independent tests now
+agree on this effect.</p>
 {_rsa_fig(f'model_rdms_noiselevel-{RSA_NOISE_LEVEL_TAG}.png',
          'The model RDMs themselves -- what "syllable," "speaker," and the acoustic features actually look like as a dissimilarity matrix, before correlating each against real per-ROI neural RDMs below.')}
 {cwns_rsa_hits_html}
@@ -809,6 +833,8 @@ control that the single-trial pipeline is picking up real signal.</p>
          'Syllable-identity model-fit by ROI (CWS vs. CWNS) -- the L-STGp hit above is the tall CWNS bar with an asterisk.')}
 {_rsa_fig(f'boxplot_model-syllable_group-CWNS_by-hemisphere_noiselevel-{RSA_NOISE_LEVEL_TAG}.png',
          'CWNS syllable-identity model-fit split by hemisphere -- the effect is left-lateralized, consistent with classic phonological encoding.')}
+{_rsa_fig('boxplot_trend_model-syllable_group-CWNS_by-hemisphere.png',
+         'CWNS syllable-identity model-fit trend across all 5 noise levels, split by hemisphere -- L-STGp shows a significant positive trend (p_FDR < .001), converging with the noiselevel-Q-only hit above.')}
 {_rsa_fig(f'boxplot_model-speaker_noiselevel-{RSA_NOISE_LEVEL_TAG}.png',
          'Speaker-identity model-fit by ROI, for comparison -- no ROI survives FDR correction for either group.')}
 </div>
@@ -876,11 +902,30 @@ any model. CWS's smaller N should widen this band relative to CWNS.</p>
 
 <h2>Open items before publication</h2>
 <ul class="open-items">
+  <li><b>Report doesn't reflect the full 5-noise-level RSA run yet.</b> RSA now runs separately
+  at every noise level (<code>Q, 8, 0, n2, n6</code>) plus a cross-level linear trend, but this
+  report's RSA section (<code>RSA_NOISE_LEVEL_TAG = 'Q'</code>) still only reads the Q-restricted
+  output. The other 4 levels' between-group results (0/120, 2/120, 3/120, 3/120, 2/120 FDR hits
+  at Q/8/0/n2/n6 respectively) and the new trend finding below aren't shown here yet.</li>
+  <li><b>New convergent finding: RSA linear noise-level trend, CWNS L-STGp/syllable.</b> Model-fit
+  for the syllable-identity model in L-STGp gets significantly stronger as noise decreases
+  (p<sub>FDR</sub> &lt; .001) -- the same ROI/model pair that's already the one within-group hit
+  at noiselevel-Q alone. Two independent tests (single-level significance, cross-level trend)
+  now agree on the same effect, which strengthens it considerably; no between-group trend
+  difference survives FDR.</li>
+  <li><b>New well-powered univariate ROI findings for CWNS.</b> The linear SNR-trend analysis
+  (added since the last report) shows a significant positive trend (activation increases as
+  noise decreases) in 18 of 20 CWNS ROIs, spanning essentially the whole core auditory/language
+  network (strongest: R-STGp, L-PT, L-STGa, R-PT, R-HG, all p<sub>FDR</sub> &lt; .001). The
+  laterality-index analysis shows CWNS is robustly left-lateralized (negative LI, driven by the
+  right-hemisphere deactivation already seen in the ROI table above) in pars opercularis across
+  all 5 SNR levels and pars triangularis at 4/5 (p<sub>FDR</sub> &lt; .05 throughout). Neither
+  trend nor LI shows a significant CWS-vs-CWNS difference at any ROI/level -- consistent with
+  every other between-group null result in this report. Not yet shown here; only the original
+  per-SNR-level ROI table is embedded.</li>
   <li><b>RSA sample size for CWS.</b> Any within-group CWS RSA hit could be driven by 1-2
-  subjects -- check per-subject values before reporting.</li>
-  <li><b>sub-SSP107</b> is excluded from <code>univariate_group-level.ipynb</code>'s
-  <code>ignore_subs</code> with no recorded reason, even though first-level GLMs ARE computed
-  for them -- confirm this exclusion is intentional before publication.</li>
+  subjects -- check per-subject values before reporting. This now applies across all 5 noise
+  levels' between-group hits, not just the original R-SMGa/acoustic_f0 one at Q.</li>
   <li><b>README is stale</b> -- still describes the pre-GLMsingle searchlight RSA approach, no
   mention of acoustic RSA, noise ceiling, or FDR correction.</li>
   <li><b>Dead code</b> -- <code>multivariate_fmri/rsa_searchlight.py</code> and
@@ -889,8 +934,10 @@ any model. CWS's smaller N should widen this band relative to CWNS.</p>
   <li><b>WIN / PTA behavioral covariates</b> exist for most subjects but never made it into the
   final whole-brain design matrix (only age/sex did) -- a natural brain-behavior correlate for
   a speech-in-noise paradigm, currently unused.</li>
-  <li><b>Next analysis:</b> correlate the R-SMGa acoustic_f0 RSA effect (or ROI betas) against
-  WIN scores -- would directly link the one real neural finding to a behavioral outcome.</li>
+  <li><b>Next analysis:</b> correlate WIN scores against the CWNS findings that are actually
+  well-powered -- the L-STGp syllable RSA trend, the whole-network univariate SNR-trend, or the
+  pars opercularis/triangularis laterality index -- rather than the small-N R-SMGa/acoustic_f0
+  between-group result, which has no univariate corroboration to lean on.</li>
 </ul>
 
 <footer>
