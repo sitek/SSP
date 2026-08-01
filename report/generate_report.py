@@ -19,8 +19,11 @@ instrumentation needed):
   - GLMSINGLE_DIR/sub-*/sub-*_glmsingle_info.json        (GLMsingle_first-level.py)
   - RDM_DIR/sub-*_glmsingle_cortical_..._rdms.hdf5       (GLMsingle_rsa-roi.py)
 plus a raw BIDS func/ listing (to count badaga runs actually on disk) and the hardcoded
-IGNORE_SUBS_REASONS below (mirrors group_level_all_ROI.ipynb's `ignore_subs` cell -- update both
-together if that list changes). This is what answers "why is this subject missing": no
+IGNORE_SUBS_REASONS below -- a manual-override slot for one-off exclusions a file-existence
+check can't catch, NOT a mirror of anything in the notebooks: group_level_all_ROI.ipynb and
+univariate_group-level.ipynb no longer keep static `ignore_subs` lists at all -- both just try
+to load each participant's derivatives and skip gracefully if they're missing. This is what
+answers "why is this subject missing": no
 first-level output yet, high motion, or -- for RSA specifically -- only one badaga run on disk
 (crossnobis needs a condition to repeat *across* runs, not just within one; GLMsingle silently
 downgrades single-run subjects to the TYPEB estimate, which is never used for RSA).
@@ -85,46 +88,19 @@ HEMI_COLOR = {'L': '#0072B2', 'R': '#D55E00'}
 ACCENT = '#9C7A1B'
 MOTION_COLOR = '#D55E00'
 
-# Subjects dropped before the pipeline even runs. As of 2026-07-31 both group-level notebooks'
-# `ignore_subs` lists are EMPTY -- group_level_all_ROI.ipynb (ROI + RSA eligibility below) and
-# univariate_group-level.ipynb (whole-brain design matrix, cov_design_df) previously hardcoded
-# different subject sets (sub-SSP058 was excluded from whole-brain only, with no reason recorded
-# anywhere -- confirmed to have full badaga data and re-included; the rest -- 001/002/005/012/
-# 014/069/072/076/102/098/105 -- were confirmed to lack enough badaga task data on disk to
-# produce first-level derivatives regardless, so build_statmap_dict/mask_stat_maps
-# (group_level_all_ROI.ipynb) and prepare_group_inputs (univariate_group-level.ipynb) already
-# drop them gracefully via their own per-file/per-covariate checks). Kept as empty dicts (not
-# deleted) so a future one-off, data-quality-driven exclusion (something a file-existence check
-# structurally can't catch, e.g. a participant who left early but still has some real-but-bad
-# data on disk) has somewhere to go in both this ledger and the source notebooks -- update
-# alongside the notebooks' own `ignore_subs` cells if that ever happens.
+# Subjects dropped before the pipeline even runs. Both group-level notebooks
+# (group_level_all_ROI.ipynb for ROI + RSA eligibility below, univariate_group-level.ipynb for
+# the whole-brain design matrix) no longer hardcode a static `ignore_subs` list at all -- each
+# just tries to load a given participant's derivatives and skips gracefully (via
+# build_statmap_dict/mask_stat_maps and prepare_group_inputs' own per-file/per-covariate checks)
+# if they're missing, so there's no separate exclusion list for the two notebooks to disagree
+# on anymore. IGNORE_SUBS_ROI_RSA below is purely a manual-override slot for this report's own
+# ledger -- a place for a future one-off, data-quality-driven exclusion that a file-existence
+# check structurally can't catch (e.g. a participant who left early but still has some
+# real-but-bad data on disk) -- not a mirror of anything in the notebooks.
 IGNORE_SUBS_ROI_RSA = {}
 
-IGNORE_SUBS_WHOLE_BRAIN = {}
-
-# kept for the ledger's single "pre-pipeline excluded" bucket used by the univariate/RSA
-# columns below (ROI/RSA is the more complete of the two lists); the whole-brain-specific
-# exclusions are tracked separately via IGNORE_SUBS_WHOLE_BRAIN and _pipeline_exclusion_mismatches().
 IGNORE_SUBS_REASONS = IGNORE_SUBS_ROI_RSA
-
-
-def _pipeline_exclusion_mismatches():
-    """Subjects excluded from one group-level notebook's ignore_subs but not the other's --
-    exactly the kind of silent split that's easy to miss when only one list is checked.
-    """
-    all_subs = set(IGNORE_SUBS_ROI_RSA) | set(IGNORE_SUBS_WHOLE_BRAIN)
-    rows = []
-    for sub_id in sorted(all_subs):
-        in_roi_rsa = sub_id in IGNORE_SUBS_ROI_RSA
-        in_whole_brain = sub_id in IGNORE_SUBS_WHOLE_BRAIN
-        if in_roi_rsa != in_whole_brain:
-            rows.append({
-                'participant_id': sub_id,
-                'excluded from ROI/RSA': 'yes' if in_roi_rsa else 'no',
-                'excluded from whole-brain': 'yes' if in_whole_brain else 'no',
-                'reason': IGNORE_SUBS_ROI_RSA.get(sub_id) or IGNORE_SUBS_WHOLE_BRAIN.get(sub_id),
-            })
-    return pd.DataFrame(rows)
 
 
 # ── small helpers ──────────────────────────────────────────────────────────────
@@ -203,6 +179,15 @@ def _img_tag(b64, caption='', width='100%'):
 def _brain_row(caption_prefix, contrast, group_tag):
     b64 = img_from_file_resized(WHOLE_BRAIN_DIR / f'group-{group_tag}_contrast-{contrast}_view-mosaic.png')
     return _img_tag(b64, f'{caption_prefix} -- contrast-{contrast}, FDR cluster-corrected.', width='100%')
+
+
+def _rsa_fig(filename, caption, width='100%'):
+    """RSA box+strip PNGs saved by GLMsingle_rsa-group.ipynb -- unlike the whole-brain mosaics,
+    these are already a screen-appropriate size (dpi=300, ~12x4in max), so no img_from_file_resized
+    downsampling needed.
+    """
+    b64 = img_from_file(RSA_OUT_DIR / filename)
+    return _img_tag(b64, caption, width=width)
 
 
 def _df_to_table_html(df, css_class='data-table'):
@@ -717,7 +702,7 @@ def _stat_tile(n, label):
 
 def build_html(*, participants_df, ledger_df,
                attrition_b64, rsa_ineligibility_b64, hit_count_b64,
-               descriptive_table_html, pre_pipeline_table_html, mismatch_table_html,
+               descriptive_table_html, pre_pipeline_table_html,
                univariate_incomplete_table_html, rsa_ineligible_table_html,
                n_motion_flagged_univariate, n_motion_dropped_rsa, n_single_run_rsa,
                cwns_roi_table_html, cws_roi_table_html,
@@ -775,17 +760,6 @@ raw BIDS listing of badaga runs on disk -- not estimated, read directly.</p>
 <code>group_level_all_ROI.ipynb</code>'s <code>ignore_subs</code> list, not derived from files.</p>
 {pre_pipeline_table_html}
 
-<h3>Pinch point: the two group-level notebooks don't agree on who's excluded</h3>
-<p><code>group_level_all_ROI.ipynb</code> (ROI + RSA eligibility above) and
-<code>univariate_group-level.ipynb</code> (whole-brain design matrix, <code>cov_design_df</code>)
-each hardcode their own <code>ignore_subs</code> list, and the two lists have drifted apart --
-a subject can be pre-pipeline-excluded from one analysis and not the other, silently, with no
-warning anywhere in either notebook. This is exactly the kind of gap that makes a raw folder
-count under <code>run-all_contrast-snr/</code> not directly comparable to
-<code>cov_design_df.CWNS.sum()</code>: the two numbers are filtered by different lists before
-you even get to per-contrast/per-covariate dropping.</p>
-{mismatch_table_html}
-
 <h3>Univariate: subjects with an incomplete SNR contrast set</h3>
 <p>Everyone else who enrolled, but doesn't have all 5 SNR-level first-level statmaps
 (<code>q</code>, <code>8</code>, <code>0</code>, <code>n2</code>, <code>n6</code>).
@@ -828,7 +802,15 @@ structure to work with.</p>
 represents syllable identity</b> (p<sub>FDR</sub> &lt; .001) -- a clean, expected result
 (classic phonological encoding in posterior superior temporal cortex), useful as a positive
 control that the single-trial pipeline is picking up real signal.</p>
+{_rsa_fig(f'model_rdms_noiselevel-{RSA_NOISE_LEVEL_TAG}.png',
+         'The model RDMs themselves -- what "syllable," "speaker," and the acoustic features actually look like as a dissimilarity matrix, before correlating each against real per-ROI neural RDMs below.')}
 {cwns_rsa_hits_html}
+{_rsa_fig(f'boxplot_model-syllable_noiselevel-{RSA_NOISE_LEVEL_TAG}.png',
+         'Syllable-identity model-fit by ROI (CWS vs. CWNS) -- the L-STGp hit above is the tall CWNS bar with an asterisk.')}
+{_rsa_fig(f'boxplot_model-syllable_group-CWNS_by-hemisphere_noiselevel-{RSA_NOISE_LEVEL_TAG}.png',
+         'CWNS syllable-identity model-fit split by hemisphere -- the effect is left-lateralized, consistent with classic phonological encoding.')}
+{_rsa_fig(f'boxplot_model-speaker_noiselevel-{RSA_NOISE_LEVEL_TAG}.png',
+         'Speaker-identity model-fit by ROI, for comparison -- no ROI survives FDR correction for either group.')}
 </div>
 
 <h2>CWS: exploratory comparison group</h2>
@@ -869,11 +851,19 @@ size.</p>
 <h3>ROI</h3>
 <p>{between_roi_summary}</p>
 
-<h3>RSA -- the one standout result</h3>
-<div class="summary headline">
+<h3>RSA -- one exploratory between-group signal (small N, treat cautiously)</h3>
+<div class="summary">
 <p>{rsa_finding_summary}</p>
+<p>Worth tracking, not worth leaning on yet: CWS N is small here, and there's no corroborating
+whole-brain or ROI univariate group difference at any noise level to back it up (see above --
+0/100 ROI&times;SNR combos and 0/9 whole-brain contrasts show a CWS-vs-CWNS difference). Treat
+this as hypothesis-generating until it either replicates with more CWS data or shows up in a
+independent measure.</p>
 </div>
 {between_rsa_hits_html}
+{_rsa_fig(f'boxplot_model-acoustic_f0_noiselevel-{RSA_NOISE_LEVEL_TAG}.png',
+         'R-SMGa acoustic_f0 model-fit by ROI, CWS vs. CWNS -- the one between-group RSA finding, shown for completeness (see caution above).',
+         width='70%')}
 
 <h3>Noise ceiling (RSA model-fit context)</h3>
 <p>Mean upper/lower noise-ceiling bounds (Nili et al. 2014) across all 20 ROIs, per group -- the
@@ -944,7 +934,6 @@ def main():
     print('Building attrition tables...')
     descriptive_table_html = _df_to_table_html(make_descriptive_stats_table(participants_df, ledger_df))
     pre_pipeline_table_html = _df_to_table_html(make_pre_pipeline_table(ledger_df))
-    mismatch_table_html = _df_to_table_html(_pipeline_exclusion_mismatches())
     univariate_incomplete_table_html = _df_to_table_html(make_univariate_incomplete_table(ledger_df))
     rsa_ineligible_table_html = _df_to_table_html(make_rsa_ineligible_table(ledger_df))
 
@@ -1022,7 +1011,6 @@ def main():
         participants_df=participants_df, ledger_df=ledger_df,
         attrition_b64=attrition_b64, rsa_ineligibility_b64=rsa_ineligibility_b64, hit_count_b64=hit_count_b64,
         descriptive_table_html=descriptive_table_html, pre_pipeline_table_html=pre_pipeline_table_html,
-        mismatch_table_html=mismatch_table_html,
         univariate_incomplete_table_html=univariate_incomplete_table_html,
         rsa_ineligible_table_html=rsa_ineligible_table_html,
         n_motion_flagged_univariate=n_motion_flagged_univariate, n_motion_dropped_rsa=n_motion_dropped_rsa,
