@@ -198,6 +198,15 @@ def _roi_fig(filename, caption, width='100%'):
     return _img_tag(b64, caption, width=width)
 
 
+def _wb_surface_fig(filename, caption, width='100%'):
+    """Whole-brain fsaverage surface PNGs saved by univariate_group-level.ipynb's
+    plot_surface_group_contrast (dpi=150, already screen-appropriate) -- unlike the volumetric
+    mosaics from the same notebook, no img_from_file_resized downsampling needed.
+    """
+    b64 = img_from_file(WHOLE_BRAIN_DIR / filename)
+    return _img_tag(b64, caption, width=width)
+
+
 def _df_to_table_html(df, css_class='data-table'):
     if df is None or len(df) == 0:
         return '<p class="missing">[no data]</p>'
@@ -310,12 +319,33 @@ def _rsa_status(sub_id):
         has_cross_run_repeats = info.get('has_cross_run_repeats')
         final_type = info.get('final_type')
 
+    # Fall back to the actual GLMsingle .npy output as ground truth when info.json is missing --
+    # GLMsingle_first-level.py writes info.json before the .npy fit output, so the two should
+    # normally agree, but treating info.json as the ONLY signal meant a subject who genuinely
+    # has usable TYPED/TYPEB output (e.g. info.json lost/never written for some other reason)
+    # still showed up as "GLMsingle not run". TYPED is preferred if both happen to exist.
+    if final_type is None:
+        if (GLMSINGLE_DIR / sub_id / 'TYPED_FITHRF_GLMDENOISE_RR.npy').exists():
+            final_type = 'TYPED_FITHRF_GLMDENOISE_RR'
+        elif (GLMSINGLE_DIR / sub_id / 'TYPEB_FITHRF.npy').exists():
+            final_type = 'TYPEB_FITHRF'
+
     mfd_fpath = GLMSINGLE_DIR / sub_id / f'{sub_id}_motion_qc.csv'
-    mean_fd = None
+    mean_fd = mean_fd_all_runs = n_runs_kept_glmsingle = None
     if mfd_fpath.exists():
         mfd_df = pd.read_csv(mfd_fpath)
         if len(mfd_df) > 0 and 'mean_fd' in mfd_df.columns:
             mean_fd = float(mfd_df['mean_fd'].iloc[0])
+        # mean_fd_all_runs/n_runs_kept are only present in motion_qc.csv files written after
+        # GLMsingle_first-level.py started writing this file BEFORE its all-runs-motion check
+        # (previously that check crashed the job before anything was written at all) -- older
+        # files on disk from before that fix won't have these columns, which is fine: the
+        # 'all runs excluded for motion' status below just doesn't fire for those subjects, and
+        # they fall through to the older, more general 'GLMsingle not run' status instead.
+        if len(mfd_df) > 0 and 'mean_fd_all_runs' in mfd_df.columns:
+            mean_fd_all_runs = float(mfd_df['mean_fd_all_runs'].iloc[0])
+        if len(mfd_df) > 0 and 'n_runs_kept' in mfd_df.columns:
+            n_runs_kept_glmsingle = int(mfd_df['n_runs_kept'].iloc[0])
 
     has_rdm = bool(glob(str(
         RDM_DIR / f'{sub_id}_glmsingle_cortical_{RDM_METHOD}_noiselevel-{RSA_NOISE_LEVEL_TAG}_rdms.hdf5'
@@ -338,9 +368,28 @@ def _rsa_status(sub_id):
                    'runs, so GLMsingle can only produce the degraded TYPEB estimate for this '
                    'subject (never used for RSA), whether or not it has been run yet. This is a '
                    'missing-data issue, not motion.'))
-    if info_fpath.exists() is False:
+    if final_type is None:
+        if n_runs_kept_glmsingle == 0:
+            # motion_qc.csv exists (written before GLMsingle's all-runs-motion check, so it
+            # survives even though the job crashed right after) and explicitly says every run
+            # was excluded -- a confident, file-backed status, not a guess.
+            return (n_runs_raw, n_runs_used, has_cross_run_repeats, final_type, mean_fd, False,
+                   'all runs excluded for motion', (
+                       f'GLMsingle_first-level.py computed FD for all {n_runs_raw} raw run(s) '
+                       f'(mean FD across all runs = {mean_fd_all_runs:.2f}mm), but every run '
+                       'exceeded the 2.0mm mean-FD threshold, so it crashed before producing any '
+                       'usable output. Motion IS the reason -- re-running won\'t change the '
+                       'outcome unless the threshold itself changes.'))
+        # Neither info.json nor a TYPED/TYPEB .npy file exists, and motion_qc.csv either doesn't
+        # exist or (for a subject processed before GLMsingle_first-level.py started writing it
+        # pre-crash) doesn't rule out the all-runs-motion case above -- genuinely ambiguous from
+        # files alone.
         return (n_runs_raw, n_runs_used, has_cross_run_repeats, final_type, mean_fd, False,
-               'GLMsingle not run', f'{n_runs_raw} badaga run(s) on disk, but GLMsingle_first-level.py hasn\'t been run for this subject yet.')
+               'GLMsingle not run', (
+                   f'{n_runs_raw} badaga run(s) on disk, but no GLMsingle output (info.json or '
+                   'TYPED/TYPEB .npy) found for this subject. Either GLMsingle_first-level.py '
+                   'hasn\'t been run yet, or it crashed for a reason not captured in '
+                   'motion_qc.csv -- check SLURM logs.'))
     if has_cross_run_repeats is False:
         # n_runs_raw >= 2 is guaranteed here (0 and 1 are handled above), so a lost repeat means
         # a run got dropped for motion, not a missing-data issue.
@@ -353,6 +402,15 @@ def _rsa_status(sub_id):
     if final_type == 'TYPED_FITHRF_GLMDENOISE_RR' and not has_rdm:
         return (n_runs_raw, n_runs_used, has_cross_run_repeats, final_type, mean_fd, False,
                'RDM not computed', 'GLMsingle produced usable TYPED betas, but GLMsingle_rsa-roi.py hasn\'t been (re-)run for this subject yet.')
+    if final_type == 'TYPEB_FITHRF' and not has_rdm:
+        # Reached when TYPEB output exists but has_cross_run_repeats couldn't be read (info.json
+        # missing, final_type recovered from the .npy fallback above) -- still definitively
+        # TYPEB, still never used for RSA, regardless of which specific reason produced it.
+        return (n_runs_raw, n_runs_used, has_cross_run_repeats, final_type, mean_fd, False,
+               'TYPEB only (never used for RSA)', (
+                   'GLMsingle produced only the degraded TYPEB estimate for this subject '
+                   '(info.json is missing, so the exact reason isn\'t recorded, but TYPEB always '
+                   'means no condition repeated across runs) -- never used for RSA.'))
     return (n_runs_raw, n_runs_used, has_cross_run_repeats, final_type, mean_fd, False,
            'unclassified', 'Doesn\'t match a known pattern -- inspect this subject\'s glmsingle_info.json directly.')
 
@@ -385,6 +443,16 @@ def build_attrition_ledger(participants_df):
         n_contrasts, mfd_uni, uni_status, uni_reason = _univariate_status(sub_id)
         (n_runs_raw, n_runs_used, has_cross_run_repeats, final_type, mfd_glms, has_rdm,
         rsa_status, rsa_reason) = _rsa_status(sub_id)
+
+        # _univariate_status can't see n_runs_raw itself (that's computed by _rsa_status, called
+        # after it) -- refine 'no output' into 'no badaga data' here when there's no raw BOLD
+        # data on disk at all. More precise, and more final, than "not run yet": this subject
+        # will never be processed for this task, vs. a subject that just hasn't been run yet.
+        if uni_status == 'no output' and n_runs_raw == 0:
+            uni_status = 'no badaga data'
+            uni_reason = ('No badaga BOLD files found on disk at all -- a missing-file issue, '
+                         'not a first-level processing gap. This subject will never be '
+                         'processed for this task.')
 
         rows.append({
             'participant_id': sub_id, 'group': group, 'pre_pipeline_excluded': False,
@@ -467,7 +535,9 @@ def make_rsa_ineligibility_chart(ledger_df):
         'RSA-eligible': 'RSA-eligible',
         'single run (file issue)': 'Only 1 badaga run\n(crossnobis needs cross-run repeats)',
         'run dropped for motion': 'Run dropped for motion\n(2+ runs -> 1 usable)',
+        'all runs excluded for motion': 'All runs excluded\nfor motion (0 usable)',
         'GLMsingle not run': 'GLMsingle not\nrun yet',
+        'TYPEB only (never used for RSA)': 'TYPEB only\n(no cross-run repeats)',
         'RDM not computed': 'TYPED betas ready,\nRDM not computed yet',
         'no badaga data': 'No badaga BOLD\nfound on disk',
         'unclassified': 'Unclassified',
@@ -613,9 +683,17 @@ def make_noise_ceiling_summary(noise_ceiling_df):
 
 
 def make_univariate_incomplete_table(ledger_df):
+    """Excludes 'no output' (no first-level run at all yet, or crashed before saving anything)
+    and 'no badaga data' (no raw BOLD on disk -- will never be processed) rows -- there's
+    nothing file-derived to say about either beyond "not run" or "never will be," and with
+    dozens of enrolled-but-unprocessed subjects either status can dominate the table. Both are
+    reported as counts in the surrounding text instead (see n_no_output_univariate and
+    n_no_badaga_data_univariate in main()).
+    """
     if ledger_df is None:
         return None
-    df = ledger_df[(~ledger_df.pre_pipeline_excluded) & (ledger_df.univariate_status != 'complete')]
+    df = ledger_df[(~ledger_df.pre_pipeline_excluded) & (ledger_df.univariate_status != 'complete') &
+                   (~ledger_df.univariate_status.isin(['no output', 'no badaga data']))]
     df = df[['participant_id', 'group', 'n_snr_contrasts', 'mean_fd_univariate', 'univariate_status', 'univariate_reason']]
     df = df.rename(columns={'n_snr_contrasts': 'contrasts found', 'mean_fd_univariate': 'mean FD',
                            'univariate_status': 'status', 'univariate_reason': 'reason'})
@@ -712,6 +790,7 @@ def build_html(*, participants_df, ledger_df,
                descriptive_table_html,
                univariate_incomplete_table_html, rsa_ineligible_table_html,
                n_motion_flagged_univariate, n_motion_dropped_rsa, n_single_run_rsa,
+               n_no_output_univariate, n_no_badaga_data_univariate,
                cwns_roi_table_html, cws_roi_table_html,
                anova_results_df, cwns_wb_summary, cws_wb_summary, diff_wb_summary,
                between_roi_summary, rsa_finding_summary,
@@ -766,9 +845,15 @@ raw BIDS listing of badaga runs on disk -- not estimated, read directly.</p>
 <p>Everyone else who enrolled, but doesn't have all 5 SNR-level first-level statmaps
 (<code>q</code>, <code>8</code>, <code>0</code>, <code>n2</code>, <code>n6</code>).
 {n_motion_flagged_univariate} of these look like a motion story (mean FD above the 0.9mm
-scrubbing threshold used by <code>univariate_first-level.py</code>) -- the rest have no
-first-level output at all yet, or failed for an unrecorded reason (check SLURM logs for those).</p>
+scrubbing threshold used by <code>univariate_first-level.py</code>) -- the rest failed for an
+unrecorded reason (check SLURM logs for those).</p>
 {univariate_incomplete_table_html}
+<p><b>{n_no_badaga_data_univariate}</b> additional enrolled subject(s) have no <code>badaga</code>
+BOLD files on disk at all -- a missing-data issue, not a processing gap, so they'll never be
+processed for this task. <b>{n_no_output_univariate}</b> more have <code>badaga</code> data on
+disk but no first-level output yet (no statmaps, no <code>motion_qc.csv</code>) -- not yet run,
+or crashed before saving anything; check SLURM logs for those. Both are omitted from the table
+above rather than padding it out row for row.</p>
 
 <h3>RSA: why isn't a subject crossnobis-eligible?</h3>
 <p>RSA/crossnobis needs a condition to repeat <em>across</em> runs, not just within one run --
@@ -788,8 +873,16 @@ worth keeping in mind if scope narrows toward a CWNS-only analysis.</p>
 <h3>Whole-brain</h3>
 <p>{cwns_wb_summary}</p>
 {_brain_row('CWNS group, quiet (Q) vs. baseline', 'q', 'cwns')}
+{_wb_surface_fig('group-cwns_contrast-q_view-surface.png',
+                 'CWNS group, quiet (Q) vs. baseline -- fsaverage surface view, same FDR threshold as the mosaic above.')}
 {_brain_row('CWNS group, Q &minus; N6 (hardest SNR contrast)', 'qMinusN6', 'cwns')}
+{_wb_surface_fig('group-cwns_contrast-qMinusN6_view-surface.png',
+                 'CWNS group, Q &minus; N6 -- fsaverage surface view, same FDR threshold as the mosaic above.')}
 {_brain_row('CWNS group, all sound vs. baseline (localizer)', 'sound', 'cwns')}
+{_wb_surface_fig('group-cwns_contrast-sound_view-surface.png',
+                 'CWNS group, all sound vs. baseline (localizer) -- fsaverage surface view, same FDR threshold as the mosaic above.')}
+{_wb_surface_fig('group-cwns_contrast-response_view-surface.png',
+                 'CWNS group, button-press response vs. baseline (motor localizer) -- fsaverage surface view (no volumetric mosaic shown for this contrast).')}
 
 <h3>ROI (20 cortical ROIs x 5 SNR levels, FDR-corrected)</h3>
 {cwns_roi_table_html}
@@ -810,6 +903,10 @@ the ROI table above) in pars opercularis across all 5 SNR levels and pars triang
 ROI or SNR level.</p>
 {_roi_fig('trendplot_snr_by-roi.png',
          'Linear SNR-trend score by ROI, CWS vs. CWNS -- asterisks mark CWNS ROIs with a significant positive trend.')}
+{_roi_fig('surface_contrast-snrTrend_group-cwns.png',
+         'CWNS mean linear SNR-trend, projected from the 20-ROI atlas onto the fsaverage surface (group_level_all_ROI.ipynb).')}
+{_wb_surface_fig('group-cwns_contrast-snrTrend_view-surface.png',
+                 'CWNS linear SNR-trend -- continuous voxelwise fsaverage surface view from the whole-brain GLM (univariate_group-level.ipynb), for comparison against the ROI-projected version above.')}
 {_roi_fig('li_heatmap_group-cwns.png',
          'CWNS mean laterality index by region x SNR level -- pars opercularis and pars triangularis are consistently left-lateralized (negative LI) across nearly every SNR level.')}
 
@@ -902,14 +999,13 @@ any model. CWS's smaller N should widen this band relative to CWNS.</p>
   respectively) only exist in the cached CSVs on disk -- extend
   <code>RSA_NOISE_LEVEL_TAG</code>'s single-value assumption to a per-level loop here if those
   are worth surfacing individually, not just via the trend.</li>
-  <li><b>New surface brain plots not embedded yet.</b> Both
-  <code>univariate_group-level.ipynb</code> (CWNS only, for contrasts qMinusN6/snrTrend/q/sound/
-  response) and <code>group_level_all_ROI.ipynb</code>'s SNR-trend section (CWS/CWNS/diff) now
-  generate fsaverage cortical-surface views alongside the existing volumetric mosaics and
-  box+strip plots -- new cells that haven't been run on the cluster yet, so there's nothing on
-  disk for this report to pick up. Rerun those sections, then wire
-  <code>group-cwns_contrast-*_view-surface.png</code> and
-  <code>surface_contrast-snrTrend_group-*.png</code> in here.</li>
+  <li><b>Surface brain plots now wired in -- confirm they actually rendered.</b> This report now
+  embeds <code>group-cwns_contrast-*_view-surface.png</code> (from
+  <code>univariate_group-level.ipynb</code>, CWNS only: qMinusN6/snrTrend/q/sound/response) and
+  <code>surface_contrast-snrTrend_group-cwns.png</code> (from
+  <code>group_level_all_ROI.ipynb</code>'s SNR-trend section). If any of those show as "figure
+  not available" above, the corresponding notebook cell hasn't been (re)run on the cluster yet
+  -- not a report bug.</li>
   <li><b>RSA sample size for CWS.</b> Any within-group CWS RSA hit could be driven by 1-2
   subjects -- check per-subject values before reporting. This applies across all 5 noise levels'
   between-group hits, not just the R-SMGa/acoustic_f0 one at Q.</li>
@@ -968,11 +1064,14 @@ def main():
     univariate_incomplete_table_html = _df_to_table_html(make_univariate_incomplete_table(ledger_df))
     rsa_ineligible_table_html = _df_to_table_html(make_rsa_ineligible_table(ledger_df))
 
-    n_motion_flagged_univariate = n_motion_dropped_rsa = n_single_run_rsa = 0
+    n_motion_flagged_univariate = n_motion_dropped_rsa = n_single_run_rsa = n_no_output_univariate = 0
+    n_no_badaga_data_univariate = 0
     if ledger_df is not None:
         n_motion_flagged_univariate = int((ledger_df.univariate_status == 'likely motion').sum())
         n_motion_dropped_rsa = int((ledger_df.rsa_status == 'run dropped for motion').sum())
         n_single_run_rsa = int((ledger_df.rsa_status == 'single run (file issue)').sum())
+        n_no_output_univariate = int((ledger_df.univariate_status == 'no output').sum())
+        n_no_badaga_data_univariate = int((ledger_df.univariate_status == 'no badaga data').sum())
 
     print('Building RSA hit tables...')
     cwns_hits = None
@@ -1045,7 +1144,8 @@ def main():
         univariate_incomplete_table_html=univariate_incomplete_table_html,
         rsa_ineligible_table_html=rsa_ineligible_table_html,
         n_motion_flagged_univariate=n_motion_flagged_univariate, n_motion_dropped_rsa=n_motion_dropped_rsa,
-        n_single_run_rsa=n_single_run_rsa,
+        n_single_run_rsa=n_single_run_rsa, n_no_output_univariate=n_no_output_univariate,
+        n_no_badaga_data_univariate=n_no_badaga_data_univariate,
         cwns_roi_table_html=cwns_roi_table_html, cws_roi_table_html=cws_roi_table_html,
         anova_results_df=anova_results_df,
         cwns_wb_summary=cwns_wb_summary, cws_wb_summary=cws_wb_summary, diff_wb_summary=diff_wb_summary,

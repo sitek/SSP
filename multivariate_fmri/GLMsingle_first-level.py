@@ -205,6 +205,30 @@ for rc in confounds_list:
 # data -- revisit with the PI if it's excluding more runs/subjects than expected.
 MOTION_FD_DROP_THRESHOLD_MM = 2.0
 keep_runs = [rx for rx, fd in enumerate(fd_by_run) if fd <= MOTION_FD_DROP_THRESHOLD_MM]
+
+# Write motion_qc.csv BEFORE the all-runs-excluded check below (and from the pre-drop fd_by_run,
+# not the post-drop one) -- previously this was written after run-dropping, from whatever
+# fd_by_run had been overwritten to. That meant (a) a subject whose runs were ALL excluded never
+# got a motion_qc.csv at all, since the RuntimeError below crashed the job first, leaving no
+# file-based way to tell "every run failed motion QC" apart from "GLMsingle hasn't been run for
+# this subject yet" downstream (report/generate_report.py's _rsa_status), and (b) even in the
+# some-runs-dropped case, the per-run columns silently relabeled surviving runs under the wrong
+# original run number (e.g. if run 2 was dropped, run 3's FD got written as "mean_fd_run-2").
+# mean_fd keeps its original meaning (mean FD of the KEPT runs, NaN if none survive) for
+# backward compatibility with existing consumers; mean_fd_all_runs and the per-run columns cover
+# every raw run using its real run number, dropped or not.
+mean_fd_kept = pd.Series([fd_by_run[rx] for rx in keep_runs]).mean() if keep_runs else float('nan')
+motion_qc_row = pd.DataFrame([{
+    'subject_id': f'sub-{subject_id}',
+    'mean_fd': mean_fd_kept,
+    'mean_fd_all_runs': pd.Series(fd_by_run).mean(),
+    'n_runs_raw': len(fd_by_run),
+    'n_runs_kept': len(keep_runs),
+    **{f'mean_fd_run-{rx + 1}': fd for rx, fd in enumerate(fd_by_run)},
+}])
+motion_qc_fpath = os.path.join(subject_out_dir, f'sub-{subject_id}_motion_qc.csv')
+motion_qc_row.to_csv(motion_qc_fpath, index=False)
+
 if len(keep_runs) == 0:
     raise RuntimeError(
         f'All {len(imgs)} run(s) for sub-{subject_id} exceed the motion QC threshold '
@@ -216,15 +240,6 @@ if len(keep_runs) < len(imgs):
          f'{MOTION_FD_DROP_THRESHOLD_MM}mm.')
     imgs = [imgs[rx] for rx in keep_runs]
     events_list = [events_list[rx] for rx in keep_runs]
-    fd_by_run = [fd_by_run[rx] for rx in keep_runs]
-
-motion_qc_row = pd.DataFrame([{
-    'subject_id': f'sub-{subject_id}',
-    'mean_fd': pd.Series(fd_by_run).mean(),
-    **{f'mean_fd_run-{rx + 1}': fd for rx, fd in enumerate(fd_by_run)},
-}])
-motion_qc_fpath = os.path.join(subject_out_dir, f'sub-{subject_id}_motion_qc.csv')
-motion_qc_row.to_csv(motion_qc_fpath, index=False)
 
 # build per-run sound-event tables + the full condition list (built dynamically from what's
 # actually observed for this subject, not a hardcoded stimulus count -- the real stimulus set
