@@ -103,6 +103,40 @@ def build_condition_labels(events):
     return sound_events
 
 
+def drop_empty_event_runs(imgs, events, confounds, subject_id):
+    """Drop any run with no 'sound' trials in its events.tsv (e.g. a run started then aborted
+    almost immediately) BEFORE build_condition_labels() tries to build condition labels from it
+    -- otherwise one empty/malformed run crashes the whole subject (a raw KeyError deep in
+    pandas, from dropna(subset=[...]) on columns that don't exist when a run's events.tsv never
+    had syllable/speaker/noise_level columns to begin with) instead of just being excluded, the
+    same way the motion-based run-drop below already excludes a run. Operates on
+    imgs/events/confounds together so the three per-run parallel lists never drift out of sync.
+    Ported from the identical fix in univariate_first-level.py -- same real case motivated it
+    here too: sub-SSP001 has 3 badaga runs on disk, and one of them has no usable trials in its
+    events.tsv.
+    """
+    keep_runs = []
+    for rx, run_events in enumerate(events):
+        has_sound_trials = ('trial_type' in run_events.columns
+                            and (run_events['trial_type'] == 'sound').any())
+        if not has_sound_trials:
+            print(f'WARNING: run {rx + 1} for sub-{subject_id} has no "sound" trials in its '
+                 'events.tsv (empty/aborted run?) -- dropping this run.')
+        else:
+            keep_runs.append(rx)
+
+    if len(keep_runs) == 0:
+        raise RuntimeError(
+            f'All {len(imgs)} run(s) for sub-{subject_id} have no usable badaga events -- '
+            'no usable data for this subject.'
+        )
+    if len(keep_runs) < len(imgs):
+        imgs = [imgs[rx] for rx in keep_runs]
+        events = [events[rx] for rx in keep_runs]
+        confounds = [confounds[rx] for rx in keep_runs]
+    return imgs, events, confounds
+
+
 def build_glmsingle_design(sound_events_by_run, cond_list, t_r, n_trs_per_run):
     """Build one (n_TRs, n_conditions) indicator matrix per run for GLMsingle -- one column per
     unique stimulus condition (repeats of the same condition share a column; this is what
@@ -191,6 +225,10 @@ if not isinstance(imgs, list):
     imgs = [imgs]
     events_list = [events_list]
     confounds_list = [confounds_list]
+
+# Drop any run with no usable 'sound' events BEFORE computing FD/building condition labels from
+# it -- see drop_empty_event_runs' docstring for the real case (sub-SSP001) that motivated this.
+imgs, events_list, confounds_list = drop_empty_event_runs(imgs, events_list, confounds_list, subject_id)
 
 # Per-run mean framewise displacement, for documentation/QC and an optional run-drop guard.
 # GLMsingle has no sample_mask/censoring input (unlike nilearn's FirstLevelModel.fit()) -- it
