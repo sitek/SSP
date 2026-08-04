@@ -901,8 +901,8 @@ robustly left-lateralized (negative LI, driven by the right-hemisphere deactivat
 the ROI table above) in pars opercularis across all 5 SNR levels and pars triangularis at 4/5
 (p<sub>FDR</sub> &lt; .05 throughout). Neither shows a significant CWS-vs-CWNS difference at any
 ROI or SNR level.</p>
-{_roi_fig('trendplot_snr_by-roi.png',
-         'Linear SNR-trend score by ROI, CWS vs. CWNS -- asterisks mark CWNS ROIs with a significant positive trend.')}
+{_roi_fig('betaplot_group-CWNS_by-snr.png',
+         'CWNS mean beta by ROI, hue=SNR level -- the raw per-SNR activation the linear trend score above summarizes into one number per ROI (descriptive view, no significance overlay).')}
 {_roi_fig('surface_contrast-snrTrend_group-cwns.png',
          'CWNS mean linear SNR-trend, projected from the 20-ROI atlas onto the fsaverage surface (group_level_all_ROI.ipynb).')}
 {_wb_surface_fig('group-cwns_contrast-snrTrend_view-surface.png',
