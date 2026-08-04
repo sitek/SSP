@@ -327,16 +327,23 @@ def _rsa_status(sub_id):
     if n_runs_raw == 0:
         return (n_runs_raw, n_runs_used, has_cross_run_repeats, final_type, mean_fd, False,
                'no badaga data', 'No badaga BOLD files found on disk at all -- a missing-file issue, not motion.')
+    if n_runs_raw == 1:
+        # A single raw run on disk rules out RSA regardless of whether GLMsingle has been run
+        # yet -- crossnobis structurally needs a condition to repeat ACROSS runs, so running
+        # GLMsingle wouldn't change the outcome here. Check this before "GLMsingle not run" so a
+        # single-run subject isn't misleadingly implied to just be waiting on that step.
+        return (n_runs_raw, n_runs_used, has_cross_run_repeats, final_type, mean_fd, False,
+               'single run (file issue)', (
+                   'Only 1 badaga run on disk -- crossnobis needs a condition to repeat ACROSS '
+                   'runs, so GLMsingle can only produce the degraded TYPEB estimate for this '
+                   'subject (never used for RSA), whether or not it has been run yet. This is a '
+                   'missing-data issue, not motion.'))
     if info_fpath.exists() is False:
         return (n_runs_raw, n_runs_used, has_cross_run_repeats, final_type, mean_fd, False,
                'GLMsingle not run', f'{n_runs_raw} badaga run(s) on disk, but GLMsingle_first-level.py hasn\'t been run for this subject yet.')
-    if has_cross_run_repeats is False and n_runs_raw <= 1:
-        return (n_runs_raw, n_runs_used, has_cross_run_repeats, final_type, mean_fd, False,
-               'single run (file issue)', (
-                   f'Only {n_runs_raw} badaga run on disk -- crossnobis needs a condition to repeat '
-                   'ACROSS runs, so GLMsingle falls back to the degraded TYPEB estimate, which is '
-                   'never used for RSA. This is a missing-data issue, not motion.'))
-    if has_cross_run_repeats is False and n_runs_raw >= 2:
+    if has_cross_run_repeats is False:
+        # n_runs_raw >= 2 is guaranteed here (0 and 1 are handled above), so a lost repeat means
+        # a run got dropped for motion, not a missing-data issue.
         return (n_runs_raw, n_runs_used, has_cross_run_repeats, final_type, mean_fd, False,
                'run dropped for motion', (
                    f'{n_runs_raw} badaga run(s) were on disk, but only {n_runs_used} survived '
@@ -476,7 +483,7 @@ def make_rsa_ineligibility_chart(ledger_df):
     x = np.arange(len(labels))
     width = 0.32
 
-    fig, ax = plt.subplots(1, 1, figsize=(8, 4.5), dpi=150)
+    fig, ax = plt.subplots(1, 1, figsize=(12, 4.5), dpi=150)
     ax.bar(x - width / 2, counts['CWNS'], width, label='CWNS', color=GROUP_COLOR['CWNS'])
     ax.bar(x + width / 2, counts['CWS'], width, label='CWS', color=GROUP_COLOR['CWS'])
     for xi, n in zip(x - width / 2, counts['CWNS']):
@@ -605,14 +612,6 @@ def make_noise_ceiling_summary(noise_ceiling_df):
     return noise_ceiling_df.groupby('group')[['ceiling_lower', 'ceiling_upper']].mean().reset_index().round(3)
 
 
-def make_pre_pipeline_table(ledger_df):
-    if ledger_df is None:
-        return None
-    df = ledger_df[ledger_df.pre_pipeline_excluded][['participant_id', 'group', 'pre_pipeline_reason']]
-    df = df.rename(columns={'pre_pipeline_reason': 'reason'})
-    return df.sort_values('participant_id').reset_index(drop=True)
-
-
 def make_univariate_incomplete_table(ledger_df):
     if ledger_df is None:
         return None
@@ -710,7 +709,7 @@ def _stat_tile(n, label):
 
 def build_html(*, participants_df, ledger_df,
                attrition_b64, rsa_ineligibility_b64, hit_count_b64,
-               descriptive_table_html, pre_pipeline_table_html,
+               descriptive_table_html,
                univariate_incomplete_table_html, rsa_ineligible_table_html,
                n_motion_flagged_univariate, n_motion_dropped_rsa, n_single_run_rsa,
                cwns_roi_table_html, cws_roi_table_html,
@@ -763,11 +762,6 @@ raw BIDS listing of badaga runs on disk -- not estimated, read directly.</p>
 
 {_img_tag(attrition_b64, 'N subjects per group, one bar per pipeline stage.', width='55%')}
 
-<h3>Excluded before the pipeline even runs</h3>
-<p>These subjects never reach first-level modeling; reasons below are recorded in
-<code>group_level_all_ROI.ipynb</code>'s <code>ignore_subs</code> list, not derived from files.</p>
-{pre_pipeline_table_html}
-
 <h3>Univariate: subjects with an incomplete SNR contrast set</h3>
 <p>Everyone else who enrolled, but doesn't have all 5 SNR-level first-level statmaps
 (<code>q</code>, <code>8</code>, <code>0</code>, <code>n2</code>, <code>n6</code>).
@@ -782,7 +776,7 @@ if it doesn't, GLMsingle silently falls back to a degraded TYPEB estimate that's
 RSA. The chart below separates that from a run being dropped for excessive motion (which can
 also leave a subject with only 1 usable run), from subjects GLMsingle simply hasn't been run for
 yet.</p>
-{_img_tag(rsa_ineligibility_b64, 'RSA-ineligibility reasons by group.', width='80%')}
+{_img_tag(rsa_ineligibility_b64, 'RSA-ineligibility reasons by group.', width='100%')}
 {rsa_ineligible_table_html}
 
 <h2>CWNS: the well-powered core dataset</h2>
@@ -902,32 +896,23 @@ any model. CWS's smaller N should widen this band relative to CWNS.</p>
 
 <h2>Open items before publication</h2>
 <ul class="open-items">
-  <li><b>Report doesn't reflect the full 5-noise-level RSA run yet.</b> RSA now runs separately
-  at every noise level (<code>Q, 8, 0, n2, n6</code>) plus a cross-level linear trend, but this
-  report's RSA section (<code>RSA_NOISE_LEVEL_TAG = 'Q'</code>) still only reads the Q-restricted
-  output. The other 4 levels' between-group results (0/120, 2/120, 3/120, 3/120, 2/120 FDR hits
-  at Q/8/0/n2/n6 respectively) and the new trend finding below aren't shown here yet.</li>
-  <li><b>New convergent finding: RSA linear noise-level trend, CWNS L-STGp/syllable.</b> Model-fit
-  for the syllable-identity model in L-STGp gets significantly stronger as noise decreases
-  (p<sub>FDR</sub> &lt; .001) -- the same ROI/model pair that's already the one within-group hit
-  at noiselevel-Q alone. Two independent tests (single-level significance, cross-level trend)
-  now agree on the same effect, which strengthens it considerably; no between-group trend
-  difference survives FDR.</li>
-  <li><b>New well-powered univariate ROI findings for CWNS.</b> The linear SNR-trend analysis
-  (added since the last report) shows a significant positive trend (activation increases as
-  noise decreases) in 18 of 20 CWNS ROIs, spanning essentially the whole core auditory/language
-  network (strongest: R-STGp, L-PT, L-STGa, R-PT, R-HG, all p<sub>FDR</sub> &lt; .001). The
-  laterality-index analysis shows CWNS is robustly left-lateralized (negative LI, driven by the
-  right-hemisphere deactivation already seen in the ROI table above) in pars opercularis across
-  all 5 SNR levels and pars triangularis at 4/5 (p<sub>FDR</sub> &lt; .05 throughout). Neither
-  trend nor LI shows a significant CWS-vs-CWNS difference at any ROI/level -- consistent with
-  every other between-group null result in this report. Not yet shown here; only the original
-  per-SNR-level ROI table is embedded.</li>
+  <li><b>RSA per-level (8, 0, n2, n6) tables still not shown individually.</b> The cross-level
+  trend (above) and the noiselevel-Q tables/figures are in this report, but the other 4 noise
+  levels' own between-group hit tables (0/120, 2/120, 3/120, 2/120 FDR hits at 8/0/n2/n6
+  respectively) only exist in the cached CSVs on disk -- extend
+  <code>RSA_NOISE_LEVEL_TAG</code>'s single-value assumption to a per-level loop here if those
+  are worth surfacing individually, not just via the trend.</li>
+  <li><b>New surface brain plots not embedded yet.</b> Both
+  <code>univariate_group-level.ipynb</code> (CWNS only, for contrasts qMinusN6/snrTrend/q/sound/
+  response) and <code>group_level_all_ROI.ipynb</code>'s SNR-trend section (CWS/CWNS/diff) now
+  generate fsaverage cortical-surface views alongside the existing volumetric mosaics and
+  box+strip plots -- new cells that haven't been run on the cluster yet, so there's nothing on
+  disk for this report to pick up. Rerun those sections, then wire
+  <code>group-cwns_contrast-*_view-surface.png</code> and
+  <code>surface_contrast-snrTrend_group-*.png</code> in here.</li>
   <li><b>RSA sample size for CWS.</b> Any within-group CWS RSA hit could be driven by 1-2
-  subjects -- check per-subject values before reporting. This now applies across all 5 noise
-  levels' between-group hits, not just the original R-SMGa/acoustic_f0 one at Q.</li>
-  <li><b>README is stale</b> -- still describes the pre-GLMsingle searchlight RSA approach, no
-  mention of acoustic RSA, noise ceiling, or FDR correction.</li>
+  subjects -- check per-subject values before reporting. This applies across all 5 noise levels'
+  between-group hits, not just the R-SMGa/acoustic_f0 one at Q.</li>
   <li><b>Dead code</b> -- <code>multivariate_fmri/rsa_searchlight.py</code> and
   <code>group_level_rsa_searchlight_WIP.ipynb</code> look superseded by the GLMsingle ROI
   pipeline; worth deprecating explicitly.</li>
@@ -980,7 +965,6 @@ def main():
 
     print('Building attrition tables...')
     descriptive_table_html = _df_to_table_html(make_descriptive_stats_table(participants_df, ledger_df))
-    pre_pipeline_table_html = _df_to_table_html(make_pre_pipeline_table(ledger_df))
     univariate_incomplete_table_html = _df_to_table_html(make_univariate_incomplete_table(ledger_df))
     rsa_ineligible_table_html = _df_to_table_html(make_rsa_ineligible_table(ledger_df))
 
@@ -1057,7 +1041,7 @@ def main():
     html = build_html(
         participants_df=participants_df, ledger_df=ledger_df,
         attrition_b64=attrition_b64, rsa_ineligibility_b64=rsa_ineligibility_b64, hit_count_b64=hit_count_b64,
-        descriptive_table_html=descriptive_table_html, pre_pipeline_table_html=pre_pipeline_table_html,
+        descriptive_table_html=descriptive_table_html,
         univariate_incomplete_table_html=univariate_incomplete_table_html,
         rsa_ineligible_table_html=rsa_ineligible_table_html,
         n_motion_flagged_univariate=n_motion_flagged_univariate, n_motion_dropped_rsa=n_motion_dropped_rsa,
