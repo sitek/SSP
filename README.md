@@ -66,11 +66,14 @@ Each subject's run:
 - Writes per-contrast effect/z-stat maps to
   `data_bids/derivatives/nilearn/run-all_contrast-snr/<sub-id>/` (or `run-all/` for the `sound`
   event type).
-- Appends to two manifests in that same output directory:
-  - `motion_qc.csv` — per-subject mean framewise displacement (feeds the group-level motion
-    covariate below).
-  - `first_level_run_manifest.csv` — per-subject success/failure log, so a failed subject is
-    recorded with its error instead of silently skipped.
+- Writes one `<sub-id>_motion_qc.csv` per subject in that same output directory (per-subject, not
+  a single shared file appended across parallel SLURM jobs, which would race) — per-subject mean
+  framewise displacement, feeding the group-level motion covariate below.
+- **Only the notebook path** (`univariate_first-level.ipynb`, looping sequentially over its own
+  `subject_list`) also writes a success/failure manifest, `first_level_run_manifest.csv`, at the
+  top level of that same output directory. The CLI/SLURM path does not — each `sbatch` job runs
+  exactly one subject with no aggregating loop to log into, so a failed run there only shows up as
+  missing contrast statmaps, and the actual error is in that job's own SLURM `.out`/`.err` log.
 
 Contrasts computed: `Q, 8, 0, n2, n6, Q - 0, Q - n6` (SNR levels, `event_type='snr'`) or
 `sound, response` (`event_type='sound'`).
