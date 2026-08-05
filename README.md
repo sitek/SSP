@@ -126,13 +126,18 @@ condition-averaged) responses. The active pipeline is
   — GLMsingle single-trial beta estimation across all `badaga` runs (`sbatch
   run_GLMsingle_first-level.sh SSP009`, or `bash loop_run_GLMsingle_first-level.sh` for the full
   cohort). `GLMsingle.ipynb` is the interactive/exploratory counterpart.
-- `GLMsingle_mask-betas.py` + `run_GLMsingle_mask-betas.sh` / `loop_run_GLMsingle_mask-betas.sh` —
-  masks every trial's beta map into the same 20-ROI cortical atlas the univariate ROI pipeline
-  uses (14 auditory + 6 extended language-network ROIs), once per subject regardless of any
-  downstream condition subsetting.
 - `GLMsingle_split-betas.py` + `run_GLMsingle_split-betas.sh` / `loop_run_GLMsingle_split-betas.sh`
-  — splits each subject's masked betas into per-condition, per-ROI CSVs
-  (`stim-<syllable>_<speaker>_<noise_level>_rep-<n>_mask-<ROI>.csv`) for RSA.
+  — splits GLMsingle's raw TYPED (or degraded TYPEB) output into one labeled NIfTI per trial
+  (`beta_images/` or `beta_images_degraded-typeb/`), using the trial manifest
+  `GLMsingle_first-level.py` saved to recover each trial's condition and chronological order.
+- `GLMsingle_mask-betas.py` + `run_GLMsingle_mask-betas.sh` / `loop_run_GLMsingle_mask-betas.sh` —
+  masks every one of those per-trial images into the same 20-ROI cortical atlas the univariate
+  ROI pipeline uses (14 auditory + 6 extended language-network ROIs), once per subject regardless
+  of any downstream condition subsetting, producing per-condition, per-ROI CSVs
+  (`stim-<syllable>_<speaker>_<noise_level>_rep-<n>_mask-<ROI>.csv`) for RSA. Only ever masks
+  TYPED output -- a subject with only degraded TYPEB output doesn't qualify for RSA and this
+  script fails loudly rather than silently masking lower-quality data (see
+  `run_rsa_for_noise_level`'s and `_rsa_status`'s TYPEB handling in the RSA notebook/report).
 
 ### 2. RSA (per subject, then group level)
 
