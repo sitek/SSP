@@ -207,9 +207,18 @@ def _wb_surface_fig(filename, caption, width='100%'):
     return _img_tag(b64, caption, width=width)
 
 
-def _df_to_table_html(df, css_class='data-table'):
-    if df is None or len(df) == 0:
+def _df_to_table_html(df, css_class='data-table', empty_msg='[no data]'):
+    """empty_msg is only used when df is a real (non-None) DataFrame with 0 rows -- e.g. a
+    significant-hits table where the underlying analysis ran fine and legitimately found nothing
+    significant. That's a different situation from df is None (the source CSV/pickle wasn't
+    found at all -- see read_csv_safe/read_pickle_safe), which always gets the generic
+    '[no data]' regardless of what empty_msg is passed, so a caller can't accidentally mask a
+    real missing-file problem with an optimistic-sounding empty_msg.
+    """
+    if df is None:
         return '<p class="missing">[no data]</p>'
+    if len(df) == 0:
+        return f'<p class="missing">{empty_msg}</p>'
     return df.to_html(classes=css_class, index=False, border=0, na_rep='—')
 
 
@@ -676,6 +685,32 @@ def make_rsa_hits_table(df, kind):
     return sig[[c for c in cols if c in sig.columns]].reset_index(drop=True)
 
 
+def make_within_group_rsa_summary(rsa_within_group_df, group_name):
+    """Same pattern as the inline rsa_finding_summary block below (between-group) -- computed
+    fresh from the actual within_group_significance CSV every time the report is built, rather
+    than a hand-written claim that can go stale the next time the underlying data changes (e.g.
+    a subject's RDM gets fixed/re-run and a previously-significant ROI/model pair drops below
+    the FDR threshold, or vice versa).
+    """
+    if rsa_within_group_df is None:
+        return '[within_group_significance CSV not found -- see Open items]'
+    group_df = rsa_within_group_df[rsa_within_group_df.group == group_name]
+    n_total = len(group_df)
+    if n_total == 0:
+        return f'No within-group RSA results found for {group_name}.'
+    sig = group_df[group_df.p_fdr < 0.05].sort_values('p_fdr')
+    if len(sig) == 0:
+        return f'No within-group ROI x model test currently survives FDR correction for {group_name} (0/{n_total}).'
+    top = sig.iloc[0]
+    summary = (f'{len(sig)}/{n_total} within-group ROI x model tests survive FDR correction for '
+              f'{group_name}. The strongest: <b>{top["ROI"]} / {top["model"]}</b> '
+              f'(p<sub>FDR</sub> = {top["p_fdr"]:.4f}).')
+    if len(sig) > 1:
+        others = ', '.join(f'{r["ROI"]}/{r["model"]}' for _, r in sig.iloc[1:].iterrows())
+        summary += f' Also significant: {others}.'
+    return summary
+
+
 def make_noise_ceiling_summary(noise_ceiling_df):
     if noise_ceiling_df is None or len(noise_ceiling_df) == 0:
         return None
@@ -794,6 +829,7 @@ def build_html(*, participants_df, ledger_df,
                cwns_roi_table_html, cws_roi_table_html,
                anova_results_df, cwns_wb_summary, cws_wb_summary, diff_wb_summary,
                between_roi_summary, rsa_finding_summary,
+               cwns_rsa_summary, cws_rsa_summary,
                cwns_rsa_hits_html, cws_rsa_hits_html, between_rsa_hits_html,
                noise_ceiling_table_html,
                n_enrolled_cwns, n_enrolled_cws, n_rsa_cwns, n_rsa_cws):
@@ -823,6 +859,55 @@ speech-in-noise task, generated from the cached outputs of
 <code>univariate_fmri/univariate_group-level.ipynb</code>, and
 <code>multivariate_fmri/GLMsingle_rsa-group.ipynb</code>.</p>
 <div class="meta">Generated {today} &middot; not a live view -- rerun this script after the next cluster run to refresh.</div>
+
+<h2>Methods</h2>
+
+<h3>MRI acquisition</h3>
+<p>Task <code>badaga</code> (speech-in-noise / phoneme discrimination): continuous acquisition,
+TR&nbsp;=&nbsp;2&nbsp;s, up to 3 runs per subject. Two other tasks exist in the raw dataset
+(<code>rest</code>, <code>alice</code> narrative listening) but aren't part of this report.</p>
+
+<h3>Preprocessing</h3>
+<p>BIDS conversion via <a href="https://heudiconv.readthedocs.io/">HeuDiConv</a>
+(<code>dicom_conversion/heuristic.py</code>). Preprocessing with <strong>fMRIPrep 23.2.1</strong>
+(output spaces: T1w, fsnative, MNI152NLin2009cAsym).</p>
+
+<h3>First-level GLM (univariate)</h3>
+<p>nilearn <code>FirstLevelModel</code> (via <code>first_level_from_bids</code>): Glover canonical
+HRF, cosine drift model, high-pass 0.01&nbsp;Hz, AR(1) noise model, 6&nbsp;mm FWHM spatial
+smoothing, fit once per subject across all available <code>badaga</code> runs. Confounds: nilearn's
+<code>'scrubbing'</code> strategy (framewise-displacement threshold 0.9&nbsp;mm, standardized
+DVARS threshold 1.5) via <code>load_confounds_strategy</code>. Contrasts: five SNR levels
+(<code>Q, 8, 0, n2, n6</code>) plus <code>Q&minus;0</code>/<code>Q&minus;N6</code> difference
+contrasts, or a separate <code>sound</code>/<code>response</code> localizer fit.</p>
+
+<h3>Single-trial modeling (multivariate / RSA track)</h3>
+<p><a href="https://glmsingle.readthedocs.io/">GLMsingle</a> estimates one beta map per trial (HRF
+library search enabled). Cross-validated GLMdenoise and ridge regularization (fracridge) are
+enabled only for subjects with a condition that repeats <em>across</em> runs -- required for
+crossnobis RSA -- otherwise GLMsingle produces a simpler, degraded fit that's never used for RSA
+(see the RSA-ineligibility breakdown below).</p>
+
+<h3>ROI definitions</h3>
+<p>20 cortical ROIs (14 "auditory": Heschl's gyrus, planum temporale/polare, superior temporal
+gyrus posterior/anterior, pars opercularis/triangularis, bilaterally; 6 "extended language
+network": supramarginal gyrus anterior/posterior, angular gyrus, bilaterally) from each subject's
+own FreeSurfer <code>aparc+aseg</code> (Desikan-Killiany) segmentation, resampled to functional
+space.</p>
+
+<h3>Group-level statistics</h3>
+<p><b>Univariate:</b> one <code>SecondLevelModel</code> per contrast (CWS+CWNS combined),
+covarying age, sex, motion (mean framewise displacement), and behavioral/cognitive covariates
+(TONI, CTOPP, CELF, PTA, WIN) where available; FDR-corrected (Benjamini-Hochberg) z-maps for the
+CWNS main effect, CWS main effect, and CWS-vs-CWNS difference. ROI-level: omnibus ANOVA
+(hemisphere &times; SNR &times; region), a parametric linear SNR-trend test per ROI, and a
+laterality index ((R&minus;L)/(|L|+|R|)) per ROI/group/SNR-level, all FDR-corrected.<br>
+<b>RSA:</b> crossnobis (cross-validated Mahalanobis) dissimilarity, computed per ROI/subject/noise
+level via <a href="https://rsatoolbox.readthedocs.io/">rsatoolbox</a>, correlated against
+categorical (syllable identity, speaker identity) and acoustic (Praat-derived speech-metric) model
+RDMs. Noise ceiling per Nili et al. (2014); subject-level bootstrap significance testing,
+FDR-corrected across ROI &times; model tests; results combined across noise levels for a linear
+noise-level trend test.</p>
 
 <div class="stat-row">
   {_stat_tile(n_enrolled_cwns, 'CWNS enrolled')}
@@ -881,8 +966,9 @@ worth keeping in mind if scope narrows toward a CWNS-only analysis.</p>
 {_brain_row('CWNS group, all sound vs. baseline (localizer)', 'sound', 'cwns')}
 {_wb_surface_fig('group-cwns_contrast-sound_view-surface.png',
                  'CWNS group, all sound vs. baseline (localizer) -- fsaverage surface view, same FDR threshold as the mosaic above.')}
+{_brain_row('CWNS group, button-press response vs. baseline (motor localizer)', 'response', 'cwns')}
 {_wb_surface_fig('group-cwns_contrast-response_view-surface.png',
-                 'CWNS group, button-press response vs. baseline (motor localizer) -- fsaverage surface view (no volumetric mosaic shown for this contrast).')}
+                 'CWNS group, button-press response vs. baseline (motor localizer) -- fsaverage surface view, same FDR threshold as the mosaic above.')}
 
 <h3>ROI (20 cortical ROIs x 5 SNR levels, FDR-corrected)</h3>
 {cwns_roi_table_html}
@@ -911,21 +997,23 @@ ROI or SNR level.</p>
          'CWNS mean laterality index by region x SNR level -- pars opercularis and pars triangularis are consistently left-lateralized (negative LI) across nearly every SNR level.')}
 
 <h3>RSA</h3>
-<p>One within-group finding survives FDR correction (of 120 ROI x model tests): <b>L-STGp
-represents syllable identity</b> (p<sub>FDR</sub> &lt; .001) -- a clean, expected result
-(classic phonological encoding in posterior superior temporal cortex), useful as a positive
-control that the single-trial pipeline is picking up real signal. The same ROI/model pair also
-shows a significant positive linear noise-level trend (below) -- two independent tests now
-agree on this effect.</p>
+<p>{cwns_rsa_summary}</p>
+<p>L-STGp/syllable is still the visually largest within-group CWNS effect below (classic
+phonological encoding in posterior superior temporal cortex -- the kind of result that would be
+a good positive control if it clears FDR), but it no longer does at noiselevel-{RSA_NOISE_LEVEL_TAG}
+as of this run. This moved since the last report (new subjects added, N_BOOT raised to 50000,
+and an events/BOLD alignment QA pass on a handful of subjects) -- worth a fresh look at
+<code>within_group_significance_noiselevel-{RSA_NOISE_LEVEL_TAG}.csv</code> for the current
+L-STGp/syllable p<sub>FDR</sub> before citing an exact number anywhere else.</p>
 {_rsa_fig(f'model_rdms_noiselevel-{RSA_NOISE_LEVEL_TAG}.png',
          'The model RDMs themselves -- what "syllable," "speaker," and the acoustic features actually look like as a dissimilarity matrix, before correlating each against real per-ROI neural RDMs below.')}
 {cwns_rsa_hits_html}
 {_rsa_fig(f'boxplot_model-syllable_noiselevel-{RSA_NOISE_LEVEL_TAG}.png',
-         'Syllable-identity model-fit by ROI (CWS vs. CWNS) -- the L-STGp hit above is the tall CWNS bar with an asterisk.')}
+         'Syllable-identity model-fit by ROI (CWS vs. CWNS) -- L-STGp/CWNS is the tallest bar but no longer marked significant (see note above).')}
 {_rsa_fig(f'boxplot_model-syllable_group-CWNS_by-hemisphere_noiselevel-{RSA_NOISE_LEVEL_TAG}.png',
          'CWNS syllable-identity model-fit split by hemisphere -- the effect is left-lateralized, consistent with classic phonological encoding.')}
 {_rsa_fig('boxplot_trend_model-syllable_group-CWNS_by-hemisphere.png',
-         'CWNS syllable-identity model-fit trend across all 5 noise levels, split by hemisphere -- L-STGp shows a significant positive trend (p_FDR < .001), converging with the noiselevel-Q-only hit above.')}
+         'CWNS syllable-identity model-fit trend across all 5 noise levels, split by hemisphere -- previously reported as a significant positive trend for L-STGp; needs re-confirming against the current within-group trend stats now that the single-level (noiselevel-Q) hit above no longer clears FDR.')}
 {_rsa_fig(f'boxplot_model-speaker_noiselevel-{RSA_NOISE_LEVEL_TAG}.png',
          'Speaker-identity model-fit by ROI, for comparison -- no ROI survives FDR correction for either group.')}
 </div>
@@ -941,6 +1029,7 @@ until checked against per-subject leverage.</p>
 {_brain_row('CWS group, quiet (Q) vs. baseline', 'q', 'cws')}
 {_brain_row('CWS group, Q &minus; N6 (hardest SNR contrast)', 'qMinusN6', 'cws')}
 {_brain_row('CWS group, all sound vs. baseline (localizer)', 'sound', 'cws')}
+{_brain_row('CWS group, button-press response vs. baseline (motor localizer)', 'response', 'cws')}
 
 <h3>ROI (20 cortical ROIs x 5 SNR levels, FDR-corrected)</h3>
 {cws_roi_table_html}
@@ -952,6 +1041,7 @@ survive FDR correction. Read that as "there's something there, underpowered to l
 not "there's nothing there."</p>
 
 <h3>RSA</h3>
+<p>{cws_rsa_summary}</p>
 <p>With a small sample throughout, pull the per-subject values from
 <code>model_fit_scalars_noiselevel-{RSA_NOISE_LEVEL_TAG}.csv</code> before treating any hit
 below as a stable group-level effect -- one or two subjects can drive a result at this sample
@@ -993,32 +1083,26 @@ any model. CWS's smaller N should widen this band relative to CWNS.</p>
 
 <h2>Open items before publication</h2>
 <ul class="open-items">
-  <li><b>RSA per-level (8, 0, n2, n6) tables still not shown individually.</b> The cross-level
-  trend (above) and the noiselevel-Q tables/figures are in this report, but the other 4 noise
-  levels' own between-group hit tables (0/120, 2/120, 3/120, 2/120 FDR hits at 8/0/n2/n6
-  respectively) only exist in the cached CSVs on disk -- extend
-  <code>RSA_NOISE_LEVEL_TAG</code>'s single-value assumption to a per-level loop here if those
-  are worth surfacing individually, not just via the trend.</li>
-  <li><b>Surface brain plots now wired in -- confirm they actually rendered.</b> This report now
-  embeds <code>group-cwns_contrast-*_view-surface.png</code> (from
-  <code>univariate_group-level.ipynb</code>, CWNS only: qMinusN6/snrTrend/q/sound/response) and
-  <code>surface_contrast-snrTrend_group-cwns.png</code> (from
-  <code>group_level_all_ROI.ipynb</code>'s SNR-trend section). If any of those show as "figure
-  not available" above, the corresponding notebook cell hasn't been (re)run on the cluster yet
-  -- not a report bug.</li>
-  <li><b>RSA sample size for CWS.</b> Any within-group CWS RSA hit could be driven by 1-2
-  subjects -- check per-subject values before reporting. This applies across all 5 noise levels'
-  between-group hits, not just the R-SMGa/acoustic_f0 one at Q.</li>
-  <li><b>Dead code</b> -- <code>multivariate_fmri/rsa_searchlight.py</code> and
-  <code>group_level_rsa_searchlight_WIP.ipynb</code> look superseded by the GLMsingle ROI
-  pipeline; worth deprecating explicitly.</li>
+  <li><b>Methods: scanner make/model and voxel size not included above.</b> Neither is tracked
+  anywhere in this codebase (not in the heudiconv heuristic, fMRIPrep launch script, or BIDS
+  sidecars this script reads) -- pull them from the acquisition protocol directly before
+  publication.</li>
+  <li><b>L-STGp/syllable RSA: single-level hit no longer FDR-significant.</b> Previously reported
+  as this report's RSA positive-control finding; as of this run it no longer clears FDR at
+  noiselevel-{RSA_NOISE_LEVEL_TAG} (see CWNS RSA section above -- likely reflects the newly-added
+  subjects, the N_BOOT=10000&rarr;50000 bump, and the events/BOLD alignment QA pass, in some
+  combination). The separately-computed across-noise-level trend for the same ROI/model was
+  previously described as significant too -- that specific claim is not re-verified against
+  fresh data here (this script doesn't currently load an RSA trend CSV) and needs an explicit
+  check before being cited again anywhere (including the "Next analysis" item below).</li>
   <li><b>WIN / PTA behavioral covariates</b> exist for most subjects but never made it into the
   final whole-brain design matrix (only age/sex did) -- a natural brain-behavior correlate for
   a speech-in-noise paradigm, currently unused.</li>
-  <li><b>Next analysis:</b> correlate WIN scores against the CWNS findings that are actually
-  well-powered -- the L-STGp syllable RSA trend, the whole-network univariate SNR-trend, or the
-  pars opercularis/triangularis laterality index -- rather than the small-N R-SMGa/acoustic_f0
-  between-group result, which has no univariate corroboration to lean on.</li>
+  <li><b>Next analysis:</b> correlate WIN scores against the CWNS findings that are currently the
+  most solidly well-powered -- the whole-network univariate SNR-trend or the pars
+  opercularis/triangularis laterality index are the safest bets right now. Hold off on the
+  L-STGp/syllable RSA trend until its significance is re-confirmed (see above), and the small-N
+  R-SMGa/acoustic_f0 between-group RSA result has no univariate corroboration to lean on either.</li>
 </ul>
 
 <footer>
@@ -1082,10 +1166,16 @@ def main():
         cws_hits = make_rsa_hits_table(rsa_within_group_df[rsa_within_group_df.group == 'CWS'], 'within')
     if rsa_group_comparison_df is not None:
         between_hits = make_rsa_hits_table(rsa_group_comparison_df, 'between')
-    cwns_rsa_hits_html = _df_to_table_html(cwns_hits)
-    cws_rsa_hits_html = _df_to_table_html(cws_hits)
-    between_rsa_hits_html = _df_to_table_html(between_hits)
+    cwns_rsa_hits_html = _df_to_table_html(
+        cwns_hits, empty_msg='No CWNS within-group ROI x model combination survived FDR correction at this noise level.')
+    cws_rsa_hits_html = _df_to_table_html(
+        cws_hits, empty_msg='No CWS within-group ROI x model combination survived FDR correction at this noise level.')
+    between_rsa_hits_html = _df_to_table_html(
+        between_hits, empty_msg='No between-group ROI x model combination survived FDR correction at this noise level.')
     noise_ceiling_table_html = _df_to_table_html(make_noise_ceiling_summary(rsa_noise_ceiling_df))
+
+    cwns_rsa_summary = make_within_group_rsa_summary(rsa_within_group_df, 'CWNS')
+    cws_rsa_summary = make_within_group_rsa_summary(rsa_within_group_df, 'CWS')
 
     # whole-brain summaries: hand-maintained from univariate_group-level.ipynb's saved output
     # (that notebook doesn't currently cache a machine-readable per-contrast threshold table --
@@ -1150,6 +1240,7 @@ def main():
         anova_results_df=anova_results_df,
         cwns_wb_summary=cwns_wb_summary, cws_wb_summary=cws_wb_summary, diff_wb_summary=diff_wb_summary,
         between_roi_summary=between_roi_summary, rsa_finding_summary=rsa_finding_summary,
+        cwns_rsa_summary=cwns_rsa_summary, cws_rsa_summary=cws_rsa_summary,
         cwns_rsa_hits_html=cwns_rsa_hits_html, cws_rsa_hits_html=cws_rsa_hits_html,
         between_rsa_hits_html=between_rsa_hits_html, noise_ceiling_table_html=noise_ceiling_table_html,
         n_enrolled_cwns=n_enrolled_cwns, n_enrolled_cws=n_enrolled_cws,
