@@ -27,7 +27,7 @@ if len(sys.argv) < 1:
 sub_id = args.sub
 task_label = 'alice'
 
-bidsroot = os.path.join('/bgfs/bchandrasekaran/',
+bidsroot = os.path.join('/ix1/bchandrasekaran/',
                         'krs228/data/',
                         'SSP/data_bids/')
 out_dir = os.path.join(bidsroot, 

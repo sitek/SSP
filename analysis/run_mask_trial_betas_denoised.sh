@@ -13,9 +13,9 @@ python mask_trial_betas.py --sub=$1 \
                            --space=MNI152NLin2009cAsym \
                            --stat=tstat \
                            --model=$model \
-    --mask_dir=/bgfs/bchandrasekaran/krs228/data/FLT/data_bids/derivatives/nilearn/masks/ \
-    --bidsroot=/bgfs/bchandrasekaran/krs228/data/FLT/data_denoised/ \
-    --fmriprep_dir=/bgfs/bchandrasekaran/krs228/data/FLT/data_denoised/derivatives/denoised_fmriprep-22.1.1/
+    --mask_dir=/ix1/bchandrasekaran/krs228/data/FLT/data_bids/derivatives/nilearn/masks/ \
+    --bidsroot=/ix1/bchandrasekaran/krs228/data/FLT/data_denoised/ \
+    --fmriprep_dir=/ix1/bchandrasekaran/krs228/data/FLT/data_denoised/derivatives/denoised_fmriprep-22.1.1/
 #done
 done
 

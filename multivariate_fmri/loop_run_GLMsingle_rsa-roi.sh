@@ -4,7 +4,7 @@
 
 # Runs the crossnobis RSA for every subject, at every noise level (Q, 8, 0, n2, n6) -- one sbatch
 # submission per (subject, noise_level) pair.
-for subpath in /bgfs/bchandrasekaran/krs228/data/SSP/data_bids/sub*/; do
+for subpath in /ix1/bchandrasekaran/krs228/data/SSP/data_bids/sub*/; do
   subid=$(basename $subpath)
   echo $subid
   sub_label=${subid#"sub-"}

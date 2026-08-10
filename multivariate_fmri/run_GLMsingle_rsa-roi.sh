@@ -12,7 +12,7 @@
 # models are only meaningful for noise_level=Q (the only level speech metrics were measured for).
 # Valid values: Q, 8, 0, n2, n6.
 
-bidsroot=/bgfs/bchandrasekaran/krs228/data/SSP/data_bids/
+bidsroot=/ix1/bchandrasekaran/krs228/data/SSP/data_bids/
 
 python GLMsingle_rsa-roi.py --sub=$1 \
                         --noise_level=$2 \

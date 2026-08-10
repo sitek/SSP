@@ -4,7 +4,7 @@
 #SBATCH -c 2
 #SBATCH --mem-per-cpu=32GB
 
-bidsroot=/bgfs/bchandrasekaran/krs228/data/SSP/data_bids/
+bidsroot=/ix1/bchandrasekaran/krs228/data/SSP/data_bids/
 
 python rsa_searchlight.py --sub=$1 \
     --space=MNI152NLin2009cAsym \

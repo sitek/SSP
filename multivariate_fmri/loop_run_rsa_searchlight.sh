@@ -1,6 +1,6 @@
 #!/bin/bash
 
-firstlevel_dir=/bgfs/bchandrasekaran/krs228/data/SSP/data_bids/derivatives/nilearn/run-specific_eventtype-stimulus/
+firstlevel_dir=/ix1/bchandrasekaran/krs228/data/SSP/data_bids/derivatives/nilearn/run-specific_eventtype-stimulus/
 
 for subpath in $firstlevel_dir/sub*/; do 
   subid=$(basename $subpath)

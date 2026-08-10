@@ -8,8 +8,8 @@ module add dcm2niix
 
 # define paths
 dicom_dir=/ix/ahamptonwray/shared/ahamptonwray_vah67_jwb103_krs228/SSP_MRI/
-data_dir=/bgfs/bchandrasekaran/krs228/data/SSP/
-software_dir=/bgfs/bchandrasekaran/krs228/software/
+data_dir=/ix1/bchandrasekaran/krs228/data/SSP/
+software_dir=/ix1/bchandrasekaran/krs228/software/
 
 sub=$1
 

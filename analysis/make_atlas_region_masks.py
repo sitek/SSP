@@ -143,28 +143,28 @@ if space_label == 'T1w' and atlas_label == 'aparc':
                                 'space-%s'%space_label, 'masks-aparc') 
     roi_dict = roi_dict_T1w_aseg
 elif space_label == 'MNI152NLin2009cAsym' and atlas_label == 'carpet_dseg': 
-    atlas_fpath = os.path.join('/bgfs/bchandrasekaran/krs228/data/',
+    atlas_fpath = os.path.join('/ix1/bchandrasekaran/krs228/data/',
                                'reference/', #tpl-MNI152NLin2009cAsym/',
                                'tpl-MNI152NLin2009cAsym_res-01_desc-carpet_dseg.nii.gz')  
     sub_mask_dir = os.path.join(nilearn_dir, 'masks', 'sub-%s'%sub_id, 
                                 'space-%s'%space_label, 'masks-dseg')  
     roi_dict = roi_dict_MNI_dseg
 elif space_label == 'MNI152NLin2009cAsym' and atlas_label == 'carpet_motor': 
-    atlas_fpath = os.path.join('/bgfs/bchandrasekaran/krs228/data/',
+    atlas_fpath = os.path.join('/ix1/bchandrasekaran/krs228/data/',
                                'reference/', 
                                'tpl-MNI152NLin2009cAsym_res-01_desc-carpet_dseg.nii.gz')  
     sub_mask_dir = os.path.join(nilearn_dir, 'masks', 'sub-%s'%sub_id, 
                                 'space-%s'%space_label, 'masks-dseg-motor')  
     roi_dict = roi_dict_MNI_motor
 elif space_label == 'MNI152NLin2009cAsym' and atlas_label == 'subcort_aud':
-    atlas_fpath = os.path.join('/bgfs/bchandrasekaran/krs228/data/',
+    atlas_fpath = os.path.join('/ix1/bchandrasekaran/krs228/data/',
                                'reference/MNI_space/atlases',
                                'sub-bigbrain_MNI_conjunction_rois.nii.gz')
     sub_mask_dir = os.path.join(nilearn_dir, 'masks', 'sub-%s'%sub_id, 
                                 'space-%s'%space_label, 'masks-subcort-aud') 
     roi_dict = roi_dict_MNI_sg_subcort
 elif space_label == 'MNI152NLin2009cAsym' and atlas_label == 'tian_S3':
-    atlas_fpath = os.path.join('/bgfs/bchandrasekaran/krs228/data/',
+    atlas_fpath = os.path.join('/ix1/bchandrasekaran/krs228/data/',
                                'reference/subcortex/Group-Parcellation/7T',
                                'Tian_Subcortex_S3_7T.nii')
     sub_mask_dir = os.path.join(nilearn_dir, 'masks', 'sub-%s'%sub_id, 

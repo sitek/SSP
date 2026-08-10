@@ -18,13 +18,13 @@ module add singularity/
 #conda activate py3
 
 # define paths
-software_path=/bgfs/bchandrasekaran/krs228/software/
-project_path=/bgfs/bchandrasekaran/krs228/data/SSP/
+software_path=/ix1/bchandrasekaran/krs228/software/
+project_path=/ix1/bchandrasekaran/krs228/data/SSP/
 data_dir=$project_path/data_bids/
 
 fmriprep_version=23.2.1
 analysis_desc="fmriprep-$fmriprep_version"
-work_dir=/bgfs/bchandrasekaran/krs228/work/${analysis_desc}
+work_dir=/ix1/bchandrasekaran/krs228/work/${analysis_desc}
 out_dir=$data_dir/derivatives/${analysis_desc}/
 
 # singularity
@@ -49,7 +49,7 @@ omp_n=4
 #singularity build $sing_img docker://nipreps/fmriprep:22.1.1
 
 # run fmriprep
-singularity run --cleanenv -B /bgfs:/bgfs $sing_img \
+singularity run --cleanenv -B /ix1:/ix1 $sing_img \
   $data_dir $out_dir participant \
   --participant-label $sub \
   --fs-license-file $fs_license \

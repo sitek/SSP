@@ -51,7 +51,7 @@ import pandas as pd
 
 # ── paths ──────────────────────────────────────────────────────────────────────
 REPORT_DIR = Path(__file__).resolve().parent
-BIDSROOT = Path('/bgfs/bchandrasekaran/krs228/data/SSP/data_bids')
+BIDSROOT = Path('/ix1/bchandrasekaran/krs228/data/SSP/data_bids')
 NILEARN_DIR = BIDSROOT / 'derivatives' / 'nilearn'
 GLMSINGLE_DIR = BIDSROOT / 'derivatives' / 'glmsingle'
 

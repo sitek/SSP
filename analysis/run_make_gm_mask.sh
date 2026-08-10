@@ -5,6 +5,6 @@
 python make_gm_mask.py --sub=$1 \
 --space=MNI152NLin2009cAsym \
 --fwhm=0 \
---bidsroot=/bgfs/bchandrasekaran/krs228/data/SSP/data_bids/ \
---fmriprep_dir=/bgfs/bchandrasekaran/krs228/data/SSP/data_bids/derivatives/fmriprep-23.2.1/
+--bidsroot=/ix1/bchandrasekaran/krs228/data/SSP/data_bids/ \
+--fmriprep_dir=/ix1/bchandrasekaran/krs228/data/SSP/data_bids/derivatives/fmriprep-23.2.1/
 

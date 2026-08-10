@@ -5,7 +5,7 @@ children who stutter (**CWS**) and children who do not stutter (**CWNS**). Devel
 Chandrasekaran Lab (University of Pittsburgh). Task names in the data: `rest`, `badaga` (a
 speech-in-noise / phoneme discrimination task), and `alice` (narrative listening).
 
-Data lives on the lab's HPC cluster under `/bgfs/bchandrasekaran/krs228/data/SSP/`, organized as
+Data lives on the lab's HPC cluster under `/ix1/bchandrasekaran/krs228/data/SSP/`, organized as
 a BIDS dataset (`data_bids/`) with fMRIPrep derivatives under `data_bids/derivatives/`. This repo
 holds the processing/analysis code only, not the data itself.
 
