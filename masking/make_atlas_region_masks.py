@@ -64,12 +64,12 @@ roi_dict_MNI_dseg = {'L-Caud': 35, 'L-Put': 36, 'L-Pall': 37, 'L-Accumb': 41,
                      'R-Lat-Ventricle': 4, 'R-Supracalcarine': 194,
                      'R-SMGa': 138, 'R-SMGp': 140, 'R-Ang': 142, 
                     }
-roi_dict_MNI_ext  = {'L-Ins': 103, 'L-SupFront': 105, 
-                     'L-ParaCing': 155, 'L-AntCing': 157, 'L-PostCing': 159, 
-                     'L-FrontOperc': 181, 'L-CentOperc': 183, 'L-ParOperc': 185, 
-                     'R-Ins': 104, 'R-SupFront': 106, 
-                     'R-ParaCing': 156, 'R-AntCing': 158, 'L-PostCing': 160, 
-                     'R-FrontOperc': 182, 'R-CentOperc': 184, 'R-ParOperc': 186, 
+roi_dict_MNI_ext  = {'L-Ins': 103, 'L-SupFront': 105,
+                     'L-ParaCing': 155, 'L-AntCing': 157, 'L-PostCing': 159,
+                     'L-FrontOperc': 181, 'L-CentOperc': 183, 'L-ParOperc': 185,
+                     'R-Ins': 104, 'R-SupFront': 106,
+                     'R-ParaCing': 156, 'R-AntCing': 158, 'R-PostCing': 160,
+                     'R-FrontOperc': 182, 'R-CentOperc': 184, 'R-ParOperc': 186,
                     }
 roi_dict_MNI_motor = {'L-Caud': 35, 'L-Put': 36, 
                       'R-Caud': 46, 'R-Put': 47, 
@@ -207,12 +207,16 @@ elif space_label == 'MNI152NLin2009cAsym' and atlas_label == 'carpet_ext':
     sub_mask_dir = os.path.join(nilearn_dir, 'masks', 'sub-%s'%sub_id, 
                                 'space-%s'%space_label, 'masks-dseg')  
     roi_dict = roi_dict_MNI_ext
-elif space_label == 'MNI152NLin2009cAsym' and atlas_label == 'carpet_motor': 
+elif space_label == 'MNI152NLin2009cAsym' and atlas_label == 'carpet_motor':
     atlas_fpath = os.path.join('/ix1/bchandrasekaran/krs228/data/',
-                               'reference/', 
-                               'tpl-MNI152NLin2009cAsym_res-01_desc-carpet_dseg.nii.gz')  
-    sub_mask_dir = os.path.join(nilearn_dir, 'masks', 'sub-%s'%sub_id, 
-                                'space-%s'%space_label, 'masks-dseg-motor')  
+                               'reference/',
+                               'tpl-MNI152NLin2009cAsym_res-01_desc-carpet_dseg.nii.gz')
+    # Same masks-dseg/ directory as carpet_dseg/carpet_ext (not the old masks-dseg-motor/) --
+    # every downstream ROI globber (group_level_all_ROI.ipynb's mask_stat_maps,
+    # GLMsingle_mask-betas.py) only ever looks in masks-dseg/, so a separate directory here just
+    # made these ROIs invisible to the rest of the pipeline for no benefit.
+    sub_mask_dir = os.path.join(nilearn_dir, 'masks', 'sub-%s'%sub_id,
+                                'space-%s'%space_label, 'masks-dseg')
     roi_dict = roi_dict_MNI_motor
 elif space_label == 'MNI152NLin2009cAsym' and atlas_label == 'subcort_aud':
     atlas_fpath = os.path.join('/ix1/bchandrasekaran/krs228/data/',

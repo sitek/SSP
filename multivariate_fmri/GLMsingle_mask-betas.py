@@ -49,16 +49,23 @@ mask_dir = args.mask_dir
 print('participant ID:', subject_id)
 
 # Cortical ROIs for RSA: the 14-ROI "auditory" network already used in
-# univariate_fmri/group_level_all_ROI.ipynb, plus the 6-ROI "extended language network"
-# (supramarginal gyrus anterior/posterior + angular gyrus, bilaterally). Both sets are already
-# present in analysis/make_atlas_region_masks.py's roi_dict_MNI_dseg and already have masks
-# generated under masks-dseg/ from the earlier univariate ROI analysis -- no new mask generation
-# needed here, just reuse.
+# univariate_fmri/group_level_all_ROI.ipynb, the 6-ROI "extended language network"
+# (supramarginal gyrus anterior/posterior + angular gyrus, bilaterally), and 6 sensorimotor ROIs
+# (precentral/postcentral/SMA, bilaterally). The first two sets come from
+# masking/make_atlas_region_masks.py's roi_dict_MNI_dseg (--atlas_label=carpet_dseg) and already
+# have masks generated under masks-dseg/ from the earlier univariate ROI analysis -- no new mask
+# generation needed for those. The sensorimotor set comes from that same script's
+# roi_dict_MNI_motor (--atlas_label=carpet_motor, same underlying carpet_dseg atlas file, just a
+# different label subset) -- this DOES need a fresh mask-generation run
+# (masking/run_make_atlas_region_masks.sh with --atlas_label=carpet_motor) before these ROIs have
+# any masks to reuse; both atlas_label runs now write into the same masks-dseg/ directory.
 # Ordered all-L-then-all-R (not per-network L/R blocks) so the two halves mirror each other
 # region-for-region -- makes hemisphere comparisons in downstream plots easier to read.
 CORTICAL_ROI_LIST = [
     'L-HG', 'L-PT', 'L-PP', 'L-STGp', 'L-STGa', 'L-ParsOp', 'L-ParsTri', 'L-SMGa', 'L-SMGp', 'L-Ang',
+    'L-Precentral', 'L-Postcentral', 'L-SMA',
     'R-HG', 'R-PT', 'R-PP', 'R-STGp', 'R-STGa', 'R-ParsOp', 'R-ParsTri', 'R-SMGa', 'R-SMGp', 'R-Ang',
+    'R-Precentral', 'R-Postcentral', 'R-SMA',
 ]
 
 glmsingle_dir = os.path.join(bidsroot, 'derivatives', 'glmsingle')

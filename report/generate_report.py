@@ -73,11 +73,15 @@ WHOLE_BRAIN_CONTRASTS = ['q', '8', '0', 'n2', 'n6', 'qMinusN6', 'qMinus0', 'soun
 # large mosaic PNGs saved at dpi=1000 -- too much for one report). Change freely.
 BRAIN_MAP_CONTRASTS = ['q', 'qMinusN6', 'sound']
 
-# same 20-ROI cortical list used throughout the pipeline (GLMsingle_mask-betas.py,
-# GLMsingle_rsa-roi.py, GLMsingle_rsa-group.ipynb, group_level_all_ROI.ipynb)
+# same 26-ROI cortical list used throughout the pipeline (GLMsingle_mask-betas.py,
+# GLMsingle_rsa-roi.py, GLMsingle_rsa-group.ipynb, group_level_all_ROI.ipynb) -- 14 auditory
+# + 6 extended language network + 6 sensorimotor (precentral/postcentral/SMA, bilaterally,
+# added 2026-08-14)
 CORTICAL_ROI_LIST = [
     'L-HG', 'L-PT', 'L-PP', 'L-STGp', 'L-STGa', 'L-ParsOp', 'L-ParsTri', 'L-SMGa', 'L-SMGp', 'L-Ang',
+    'L-Precentral', 'L-Postcentral', 'L-SMA',
     'R-HG', 'R-PT', 'R-PP', 'R-STGp', 'R-STGa', 'R-ParsOp', 'R-ParsTri', 'R-SMGa', 'R-SMGp', 'R-Ang',
+    'R-Precentral', 'R-Postcentral', 'R-SMA',
 ]
 
 # same Okabe-Ito-derived colors already used in the notebooks' own figures (plot_roi_box_strip /
@@ -245,6 +249,22 @@ def load_between_group_stats():
 
 def load_anova_results():
     return read_csv_safe(GROUP_OUT_DIR / 'anova_results.csv')
+
+
+def load_within_group_trend_stats():
+    return read_csv_safe(GROUP_OUT_DIR / 'within_group_trend_stats.csv')
+
+
+def load_within_group_li_stats():
+    return read_csv_safe(GROUP_OUT_DIR / 'within_group_li_stats.csv')
+
+
+def load_between_group_trend_stats():
+    return read_csv_safe(GROUP_OUT_DIR / 'between_group_trend_stats.csv')
+
+
+def load_between_group_li_stats():
+    return read_csv_safe(GROUP_OUT_DIR / 'between_group_li_stats.csv')
 
 
 def load_rsa_model_fit():
@@ -582,8 +602,9 @@ def make_rsa_ineligibility_chart(ledger_df):
 
 
 def make_roi_hit_count_chart(within_group_stats_df):
-    """Bar chart: count of FDR-significant ROI x SNR tests per group, out of 100 possible each
-    (20 ROIs x 5 SNR levels) -- the headline power comparison between CWNS and CWS.
+    """Bar chart: count of FDR-significant ROI x SNR tests per group, out of the theoretical
+    max (len(CORTICAL_ROI_LIST) x number of SNR levels) -- the headline power comparison between
+    CWNS and CWS.
     """
     if within_group_stats_df is None:
         return None
@@ -591,7 +612,10 @@ def make_roi_hit_count_chart(within_group_stats_df):
     counts = sig.groupby('group').size()
     groups = ['CWNS', 'CWS']
     n_sig = [counts.get(g, 0) for g in groups]
-    n_total = 100  # 20 ROIs x 5 SNR levels, per group
+    # was hardcoded to 100 (20 ROIs x 5 SNR levels) -- silently wrong as soon as CORTICAL_ROI_LIST
+    # changes (e.g. the 6 sensorimotor ROIs added 2026-08-14), since this denominator never
+    # tracked the actual ROI count. Derived dynamically instead.
+    n_total = len(CORTICAL_ROI_LIST) * within_group_stats_df['SNR'].nunique()
 
     fig, ax = plt.subplots(1, 1, figsize=(3.6, 4), dpi=150)
     bars = ax.bar(groups, n_sig, color=[GROUP_COLOR[g] for g in groups], width=0.55)
@@ -709,6 +733,79 @@ def make_within_group_rsa_summary(rsa_within_group_df, group_name):
         others = ', '.join(f'{r["ROI"]}/{r["model"]}' for _, r in sig.iloc[1:].iterrows())
         summary += f' Also significant: {others}.'
     return summary
+
+
+def make_snr_trend_summary(trend_df, group_name):
+    """Same live-computed pattern as make_within_group_rsa_summary -- the CWNS SNR-trend
+    paragraph used to be hand-written prose ('18 of 20 ROIs...') with no CSV backing it at all,
+    so it silently went stale the moment CORTICAL_ROI_LIST changed (e.g. the 6 sensorimotor ROIs
+    added 2026-08-14). Only counts a *positive* trend as a hit, matching the original text's
+    framing ('activation should increase as noise decreases') -- a significant negative trend
+    would be the opposite relationship, not a variant of the same finding.
+    """
+    if trend_df is None:
+        return '[within_group_trend_stats CSV not found -- see Open items]'
+    group_df = trend_df[trend_df.group == group_name]
+    n_total = len(group_df)
+    if n_total == 0:
+        return f'No SNR-trend results found for {group_name}.'
+    sig = group_df[(group_df.p_fdr < 0.05) & (group_df.mean_trend > 0)].sort_values('p_fdr')
+    if len(sig) == 0:
+        return (f'No ROI shows a significant positive linear SNR-trend (activation increasing '
+               f'as noise decreases) for {group_name} (0/{n_total}).')
+    summary = (f'A linear SNR-trend (activation should increase as noise decreases) survives '
+              f'FDR correction in {len(sig)} of {n_total} ROIs for {group_name}')
+    top = sig.head(5)
+    strongest = ', '.join(top['region_hemi'])
+    summary += (f' -- strongest: {strongest}'
+               f'{", ..." if len(sig) > 5 else ""} (all p<sub>FDR</sub> &lt; '
+               f'{top["p_fdr"].max():.3f}).')
+    return summary
+
+
+def make_li_summary(li_df, group_name):
+    """Same live-computed pattern as make_within_group_rsa_summary/make_snr_trend_summary --
+    replaces hand-written laterality prose that had no CSV backing it. Direction convention
+    (negative LI = 'left-lateralized') matches how this report has always described LI findings.
+    """
+    if li_df is None:
+        return '[within_group_li_stats CSV not found -- see Open items]'
+    group_df = li_df[li_df.group == group_name]
+    if len(group_df) == 0:
+        return f'No laterality index results found for {group_name}.'
+    n_snr_total = group_df['SNR'].nunique()
+    sig = group_df[group_df.p_fdr < 0.05]
+    if len(sig) == 0:
+        return f'No region shows a significant laterality index for {group_name}.'
+    region_stats = sig.groupby('region').agg(
+        n_sig_levels=('SNR', 'nunique'), mean_li=('mean_LI', 'mean'),
+    ).sort_values('n_sig_levels', ascending=False)
+    parts = []
+    for region, row in region_stats.iterrows():
+        direction = 'left' if row['mean_li'] < 0 else 'right'
+        parts.append(f'{region} ({direction}-lateralized at {int(row["n_sig_levels"])}/{n_snr_total} SNR levels)')
+    return (f'Laterality index (R&minus;L)/(|L|+|R|) shows significant lateralization for '
+           f'{group_name} in ' + ', '.join(parts) + '.')
+
+
+def make_trend_li_between_group_summary(between_trend_df, between_li_df):
+    """Replaces the old hand-written 'Neither shows a significant CWS-vs-CWNS difference at any
+    ROI or SNR level' claim -- same hardcoded-with-no-CSV-backing problem as the within-group
+    trend/LI prose above, just for the between-group comparison. Mirrors between_roi_summary's
+    inline 'N/M combinations survive FDR' pattern.
+    """
+    def _one(df, label):
+        if df is None or len(df) == 0:
+            return f'{label}: [CSV not found -- see Open items]'
+        n_sig = int((df.p_fdr < 0.05).sum())
+        return f'{label}: {n_sig}/{len(df)} significant (smallest p<sub>FDR</sub> = {df.p_fdr.min():.3f})'
+
+    trend_part = _one(between_trend_df, 'SNR-trend')
+    li_part = _one(between_li_df, 'laterality index')
+    if (between_trend_df is not None and (between_trend_df.p_fdr < 0.05).sum() == 0
+            and between_li_df is not None and (between_li_df.p_fdr < 0.05).sum() == 0):
+        return 'Neither shows a significant CWS-vs-CWNS difference at any ROI or SNR level.'
+    return f'{trend_part}; {li_part}.'
 
 
 def make_noise_ceiling_summary(noise_ceiling_df):
@@ -830,6 +927,8 @@ def build_html(*, participants_df, ledger_df,
                anova_results_df, cwns_wb_summary, cws_wb_summary, diff_wb_summary,
                between_roi_summary, rsa_finding_summary,
                cwns_rsa_summary, cws_rsa_summary,
+               cwns_snr_trend_summary, cws_snr_trend_summary,
+               cwns_li_summary, cws_li_summary, trend_li_between_group_summary,
                cwns_rsa_hits_html, cws_rsa_hits_html, between_rsa_hits_html,
                noise_ceiling_table_html,
                n_enrolled_cwns, n_enrolled_cws, n_rsa_cwns, n_rsa_cws):
@@ -889,11 +988,12 @@ crossnobis RSA -- otherwise GLMsingle produces a simpler, degraded fit that's ne
 (see the RSA-ineligibility breakdown below).</p>
 
 <h3>ROI definitions</h3>
-<p>20 cortical ROIs (14 "auditory": Heschl's gyrus, planum temporale/polare, superior temporal
+<p>26 cortical ROIs (14 "auditory": Heschl's gyrus, planum temporale/polare, superior temporal
 gyrus posterior/anterior, pars opercularis/triangularis, bilaterally; 6 "extended language
-network": supramarginal gyrus anterior/posterior, angular gyrus, bilaterally) from each subject's
-own FreeSurfer <code>aparc+aseg</code> (Desikan-Killiany) segmentation, resampled to functional
-space.</p>
+network": supramarginal gyrus anterior/posterior, angular gyrus, bilaterally; 6 sensorimotor:
+precentral/postcentral/SMA, bilaterally -- added 2026-08-14) from a shared, pre-built
+Desikan-Killiany-derived atlas in MNI152NLin2009cAsym space (<code>desc-carpet_dseg</code>),
+resampled to each subject's functional grid -- not a per-subject FreeSurfer run.</p>
 
 <h3>Group-level statistics</h3>
 <p><b>Univariate:</b> one <code>SecondLevelModel</code> per contrast (CWS+CWNS combined),
@@ -970,7 +1070,7 @@ worth keeping in mind if scope narrows toward a CWNS-only analysis.</p>
 {_wb_surface_fig('group-cwns_contrast-response_view-surface.png',
                  'CWNS group, button-press response vs. baseline (motor localizer) -- fsaverage surface view, same FDR threshold as the mosaic above.')}
 
-<h3>ROI (20 cortical ROIs x 5 SNR levels, FDR-corrected)</h3>
+<h3>ROI ({len(CORTICAL_ROI_LIST)} cortical ROIs x 5 SNR levels, FDR-corrected)</h3>
 {cwns_roi_table_html}
 
 <h3>Omnibus ANOVA (hemisphere x SNR x region)</h3>
@@ -979,14 +1079,9 @@ SNR&times;region, and the 3-way interaction (see table below) -- substantial, we
 structure to work with.</p>
 
 <h3>Linear SNR-trend &amp; laterality index</h3>
-<p>Two analyses added since the last report, both well-powered for CWNS: a linear SNR-trend
-(activation should increase as noise decreases) survives FDR correction in 18 of 20 ROIs --
-essentially the whole core auditory/language network (strongest: R-STGp, L-PT, L-STGa, R-PT,
-R-HG, all p<sub>FDR</sub> &lt; .001). Laterality index (R&minus;L)/(|L|+|R|) shows CWNS is
-robustly left-lateralized (negative LI, driven by the right-hemisphere deactivation already in
-the ROI table above) in pars opercularis across all 5 SNR levels and pars triangularis at 4/5
-(p<sub>FDR</sub> &lt; .05 throughout). Neither shows a significant CWS-vs-CWNS difference at any
-ROI or SNR level.</p>
+<p>{cwns_snr_trend_summary}</p>
+<p>{cwns_li_summary}</p>
+<p>{trend_li_between_group_summary}</p>
 {_roi_fig('betaplot_group-CWNS_by-snr.png',
          'CWNS mean beta by ROI, hue=SNR level -- the raw per-SNR activation the linear trend score above summarizes into one number per ROI (descriptive view, no significance overlay).')}
 {_roi_fig('surface_contrast-snrTrend_group-cwns.png',
@@ -1031,7 +1126,7 @@ until checked against per-subject leverage.</p>
 {_brain_row('CWS group, all sound vs. baseline (localizer)', 'sound', 'cws')}
 {_brain_row('CWS group, button-press response vs. baseline (motor localizer)', 'response', 'cws')}
 
-<h3>ROI (20 cortical ROIs x 5 SNR levels, FDR-corrected)</h3>
+<h3>ROI ({len(CORTICAL_ROI_LIST)} cortical ROIs x 5 SNR levels, FDR-corrected)</h3>
 {cws_roi_table_html}
 
 <h3>Omnibus ANOVA</h3>
@@ -1039,6 +1134,10 @@ until checked against per-subject leverage.</p>
 interaction is too (p=.034) -- but zero pairwise post-hoc comparisons within that interaction
 survive FDR correction. Read that as "there's something there, underpowered to localize,"
 not "there's nothing there."</p>
+
+<h3>Linear SNR-trend &amp; laterality index</h3>
+<p>{cws_snr_trend_summary}</p>
+<p>{cws_li_summary}</p>
 
 <h3>RSA</h3>
 <p>{cws_rsa_summary}</p>
@@ -1125,6 +1224,10 @@ def main():
     roi_long_df = load_roi_long()
     within_group_stats_df = load_within_group_stats()
     between_group_stats_df = load_between_group_stats()
+    within_group_trend_stats_df = load_within_group_trend_stats()
+    within_group_li_stats_df = load_within_group_li_stats()
+    between_group_trend_stats_df = load_between_group_trend_stats()
+    between_group_li_stats_df = load_between_group_li_stats()
     anova_results_df = load_anova_results()
     rsa_model_fit_df = load_rsa_model_fit()
     rsa_group_comparison_df = load_rsa_group_comparison()
@@ -1176,6 +1279,13 @@ def main():
 
     cwns_rsa_summary = make_within_group_rsa_summary(rsa_within_group_df, 'CWNS')
     cws_rsa_summary = make_within_group_rsa_summary(rsa_within_group_df, 'CWS')
+
+    cwns_snr_trend_summary = make_snr_trend_summary(within_group_trend_stats_df, 'CWNS')
+    cws_snr_trend_summary = make_snr_trend_summary(within_group_trend_stats_df, 'CWS')
+    cwns_li_summary = make_li_summary(within_group_li_stats_df, 'CWNS')
+    cws_li_summary = make_li_summary(within_group_li_stats_df, 'CWS')
+    trend_li_between_group_summary = make_trend_li_between_group_summary(
+        between_group_trend_stats_df, between_group_li_stats_df)
 
     # whole-brain summaries: hand-maintained from univariate_group-level.ipynb's saved output
     # (that notebook doesn't currently cache a machine-readable per-contrast threshold table --
@@ -1241,6 +1351,9 @@ def main():
         cwns_wb_summary=cwns_wb_summary, cws_wb_summary=cws_wb_summary, diff_wb_summary=diff_wb_summary,
         between_roi_summary=between_roi_summary, rsa_finding_summary=rsa_finding_summary,
         cwns_rsa_summary=cwns_rsa_summary, cws_rsa_summary=cws_rsa_summary,
+        cwns_snr_trend_summary=cwns_snr_trend_summary, cws_snr_trend_summary=cws_snr_trend_summary,
+        cwns_li_summary=cwns_li_summary, cws_li_summary=cws_li_summary,
+        trend_li_between_group_summary=trend_li_between_group_summary,
         cwns_rsa_hits_html=cwns_rsa_hits_html, cws_rsa_hits_html=cws_rsa_hits_html,
         between_rsa_hits_html=between_rsa_hits_html, noise_ceiling_table_html=noise_ceiling_table_html,
         n_enrolled_cwns=n_enrolled_cwns, n_enrolled_cws=n_enrolled_cws,

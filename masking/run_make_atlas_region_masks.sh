@@ -4,16 +4,23 @@
 
 # atlas options: carpet_dseg, subcort_aud, tian_S2, tian_S3, carpet_motor
 
-for subpath in /ix1/bchandrasekaran/krs228/data/SSP/data_bids/sub*/; do 
+for subpath in /ix1/bchandrasekaran/krs228/data/SSP/data_bids/sub*/; do
   subid=$(basename $subpath)
   echo $subid
   sub_label=${subid#"sub-"}
 #for sub_label in 'SSP013' 'SSP018' 'SSP032'; do
 #  echo $sub_label
-  python make_atlas_region_masks.py --sub=$sub_label \
-    --space=MNI152NLin2009cAsym \
-    --fwhm=0.00 \
-    --atlas_label=carpet_dseg \
-    --bidsroot=/ix1/bchandrasekaran/krs228/data/SSP/data_bids/ \
-    --fmriprep_dir=/ix1/bchandrasekaran/krs228/data/SSP/data_bids/derivatives/fmriprep-23.2.1/
+  # carpet_dseg: the 20 auditory/language ROIs. carpet_motor: the 6 sensorimotor ROIs
+  # (precentral/postcentral/SMA, bilaterally) added 2026-08-14 -- both atlas_labels now write
+  # into the same masks-dseg/ output directory, so CORTICAL_ROI_LIST's full 26-ROI set needs
+  # both runs. Re-running carpet_dseg for already-processed subjects is harmless (regenerates
+  # the same masks).
+  for atlas_label in carpet_dseg carpet_motor; do
+    python make_atlas_region_masks.py --sub=$sub_label \
+      --space=MNI152NLin2009cAsym \
+      --fwhm=0.00 \
+      --atlas_label=$atlas_label \
+      --bidsroot=/ix1/bchandrasekaran/krs228/data/SSP/data_bids/ \
+      --fmriprep_dir=/ix1/bchandrasekaran/krs228/data/SSP/data_bids/derivatives/fmriprep-23.2.1/
+  done
 done

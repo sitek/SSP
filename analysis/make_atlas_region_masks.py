@@ -149,12 +149,16 @@ elif space_label == 'MNI152NLin2009cAsym' and atlas_label == 'carpet_dseg':
     sub_mask_dir = os.path.join(nilearn_dir, 'masks', 'sub-%s'%sub_id, 
                                 'space-%s'%space_label, 'masks-dseg')  
     roi_dict = roi_dict_MNI_dseg
-elif space_label == 'MNI152NLin2009cAsym' and atlas_label == 'carpet_motor': 
+elif space_label == 'MNI152NLin2009cAsym' and atlas_label == 'carpet_motor':
     atlas_fpath = os.path.join('/ix1/bchandrasekaran/krs228/data/',
-                               'reference/', 
-                               'tpl-MNI152NLin2009cAsym_res-01_desc-carpet_dseg.nii.gz')  
-    sub_mask_dir = os.path.join(nilearn_dir, 'masks', 'sub-%s'%sub_id, 
-                                'space-%s'%space_label, 'masks-dseg-motor')  
+                               'reference/',
+                               'tpl-MNI152NLin2009cAsym_res-01_desc-carpet_dseg.nii.gz')
+    # Same masks-dseg/ directory as carpet_dseg (not the old masks-dseg-motor/) -- every
+    # downstream ROI globber (group_level_all_ROI.ipynb's mask_stat_maps,
+    # GLMsingle_mask-betas.py) only ever looks in masks-dseg/, so a separate directory here just
+    # made these ROIs invisible to the rest of the pipeline for no benefit.
+    sub_mask_dir = os.path.join(nilearn_dir, 'masks', 'sub-%s'%sub_id,
+                                'space-%s'%space_label, 'masks-dseg')
     roi_dict = roi_dict_MNI_motor
 elif space_label == 'MNI152NLin2009cAsym' and atlas_label == 'subcort_aud':
     atlas_fpath = os.path.join('/ix1/bchandrasekaran/krs228/data/',
